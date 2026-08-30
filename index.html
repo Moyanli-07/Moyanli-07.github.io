@@ -1,0 +1,3464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日常记录 · Daily Journal</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.18);
+    --shadow-sm: 0 2px 10px rgba(0,0,0,0.1);
+    --trans: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    background: #f5f5f7;
+    color: #333;
+    line-height: 1.7;
+    padding: 32px 20px 80px;
+  }
+
+  .app {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ======= HEADER ======= */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #2d1b4e 0%, #a8d8ea 50%, #daa520 100%);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15), transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1), transparent 50%);
+    pointer-events: none;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 300;
+    letter-spacing: 6px;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
+  }
+  .header .sub {
+    color: rgba(255,255,255,0.88);
+    margin-top: 10px;
+    font-size: 0.95rem;
+    letter-spacing: 3px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ======= NAV TABS ======= */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+    background: #fff;
+    padding: 8px;
+    border-radius: 50px;
+    box-shadow: var(--shadow-sm);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tab {
+    padding: 10px 28px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #666;
+    transition: var(--trans);
+    letter-spacing: 1px;
+  }
+  .tab:hover { color: #333; }
+  .tab.active {
+    background: linear-gradient(135deg, #2d1b4e, #5d4e6d);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(45,27,78,0.4);
+  }
+
+  .panel { display: none; animation: fadeIn 0.5s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ======= FORM ======= */
+  .form-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+  }
+  .form-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .form-title .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: linear-gradient(135deg, #87ceeb, #5d4e6d);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #555;
+    letter-spacing: 1px;
+  }
+  .field input[type="date"],
+  .field input[type="time"],
+  .field input[type="number"],
+  .field input[type="text"],
+  .field textarea,
+  .field select {
+    padding: 11px 14px;
+    border: 1.5px solid #e2e2e8;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: var(--trans);
+    background: #fafafc;
+    color: #2c2c2c;
+  }
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    outline: none;
+    border-color: #5d4e6d;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(93,78,109,0.1);
+  }
+  .field textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  .field.full { grid-column: 1 / -1; }
+
+  .tasks-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .task-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a8d8ea, #5d4e6d);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .task-item input { flex: 1; }
+
+  .task-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .task-tip {
+    font-size: 0.78rem;
+    color: #999;
+    letter-spacing: 1px;
+  }
+  .btn-inline {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    border-radius: 50px;
+    border: 1.5px dashed #a878bd;
+    background: #faf6fc;
+    color: #6b3b78;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: var(--trans);
+  }
+  .btn-inline:hover { background: #f0e6f8; transform: translateY(-1px); }
+
+  /* 自定义复选框（卡片内使用） */
+  .task-check {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--c-accent);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--trans);
+    position: relative;
+  }
+  .task-check.checked {
+    background: var(--c-accent);
+  }
+  .task-check.checked::after {
+    content: "";
+    width: 6px; height: 11px;
+    border: solid var(--c-card);
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  .task-check:hover { transform: scale(1.08); }
+  .task-row.done .task-text {
+    text-decoration: line-through;
+    opacity: 0.55;
+    font-weight: 400 !important;
+  }
+  .task-row.done {
+    opacity: 0.85;
+  }
+  .task-progress {
+    margin-left: auto;
+    padding: 3px 12px;
+    border-radius: 50px;
+    background: var(--c-card);
+    color: var(--c-text);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 1px solid var(--c-line);
+  }
+
+  .mood-select {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .mood-chip {
+    padding: 8px 16px;
+    border-radius: 50px;
+    background: #f0f0f5;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--trans);
+    border: 1.5px solid transparent;
+    user-select: none;
+  }
+  .mood-chip:hover { background: #e6e6ef; }
+  .mood-chip.selected {
+    background: linear-gradient(135deg, #5d4e6d, #2d1b4e);
+    color: #fff;
+    border-color: transparent;
+    transform: scale(1.03);
+  }
+  .mood-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .mood-actions label.act-label {
+    font-size: 0.82rem;
+    color: #888;
+    letter-spacing: 1px;
+    margin: 0;
+    font-weight: 600;
+  }
+  .mood-time-input {
+    padding: 8px 12px;
+    border: 1.5px solid #e2e2e8;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fafafc;
+  }
+  .mood-note-input {
+    padding: 8px 12px;
+    border: 1.5px solid #e2e2e8;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fafafc;
+    flex: 1;
+    min-width: 200px;
+  }
+  .mood-time-input:focus, .mood-note-input:focus {
+    outline: none;
+    border-color: #5d4e6d;
+    background: #fff;
+  }
+  .mood-add-btn {
+    padding: 9px 20px;
+    border-radius: 50px;
+    border: none;
+    background: linear-gradient(135deg, #5d4e6d, #2d1b4e);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 1px;
+    font-size: 0.88rem;
+    transition: var(--trans);
+    box-shadow: 0 3px 10px rgba(45,27,78,0.25);
+  }
+  .mood-add-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(45,27,78,0.35); }
+  .mood-add-btn:disabled {
+    opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none;
+  }
+  .mood-timeline {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mood-timeline-title {
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    color: #888;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .mood-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 14px;
+    background: linear-gradient(135deg, #faf8fc, #f4f0fa);
+    border-radius: 50px;
+    border-left: 3px solid #c9a0dc;
+  }
+  .mood-entry .me-time {
+    font-weight: 700;
+    color: #5d4e6d;
+    min-width: 60px;
+    font-size: 0.88rem;
+  }
+  .mood-entry .me-mood {
+    background: #fff;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #444;
+    border: 1px solid #e8dff0;
+  }
+  .mood-entry .me-del {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    color: #bbb;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 50%;
+    transition: var(--trans);
+  }
+  .mood-entry .me-del:hover { background: #ffe8e8; color: #c0392b; }
+  .mood-entry .me-note {
+    font-size: 0.8rem;
+    color: #8a7a98;
+    font-weight: 500;
+    padding: 3px 10px;
+    background: #fff;
+    border-radius: 50px;
+    border: 1px dashed #d9c8e8;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 日卡内心情备注 */
+  .mood-flow-note {
+    font-size: 0.74rem;
+    padding: 2px 9px;
+    border-radius: 50px;
+    background: var(--c-card);
+    border: 1px dashed var(--c-line);
+    color: var(--c-text-soft);
+    margin-left: 4px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 建议卡片 */
+  .advice-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: #fcfafe;
+    border-left: 4px solid #c9a0dc;
+  }
+  .advice-row.p-high { background: #fff5f5; border-left-color: #b22222; }
+  .advice-row.p-mid  { background: #fffaf0; border-left-color: #daa520; }
+  .advice-row.p-low  { background: #f3faf5; border-left-color: #4fa8c9; }
+  .advice-row .tag-prio {
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .advice-row.p-high .tag-prio { background: #b22222; }
+  .advice-row.p-mid  .tag-prio { background: #daa520; color: #3a2a05; }
+  .advice-row.p-low  .tag-prio { background: #4fa8c9; }
+  .advice-row .a-body {
+    flex: 1;
+    color: #333;
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+  .advice-row .a-body .a-ti {
+    font-weight: 700;
+    color: #2c2c2c;
+    margin-right: 6px;
+  }
+  .advice-empty {
+    padding: 20px;
+    color: #888;
+    text-align: center;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+  }
+
+  /* 年总结专用样式 */
+  .year-hero {
+    background: linear-gradient(135deg, #0a0a0a 0%, #2d1b4e 50%, #8b6508 100%);
+    color: #fff;
+    border-radius: 18px;
+    padding: 40px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.25);
+  }
+  .year-hero::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    background: radial-gradient(circle at 15% 20%, rgba(201,160,220,0.25), transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(218,165,32,0.25), transparent 45%);
+  }
+  .year-hero .big {
+    font-size: 4.5rem;
+    font-weight: 200;
+    letter-spacing: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .year-hero .sub-title {
+    margin-top: 8px;
+    font-size: 1.05rem;
+    letter-spacing: 6px;
+    opacity: 0.85;
+    position: relative;
+    z-index: 1;
+  }
+  .year-hero .meta {
+    margin-top: 20px;
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .year-hero .meta div {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    opacity: 0.8;
+  }
+  .year-hero .meta strong {
+    font-size: 1.5rem;
+    color: #ffd0c0;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .year-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px;
+  }
+  .year-stats .ys {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    text-align: center;
+    border-top: 3px solid #5d4e6d;
+  }
+  .year-stats .ys .yl {
+    font-size: 0.74rem;
+    letter-spacing: 2px;
+    color: #999;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .year-stats .ys .yv {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #2c2c2c;
+    margin-top: 6px;
+  }
+  .year-stats .ys .yu {
+    font-size: 0.8rem;
+    color: #999;
+    margin-left: 2px;
+    font-weight: 500;
+  }
+  .year-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .year-keywords .kw {
+    padding: 7px 18px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #5d4e6d, #2d1b4e);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .year-keywords .kw.k2 { background: linear-gradient(135deg, #a8d8ea, #4fa8c9); }
+  .year-keywords .kw.k3 { background: linear-gradient(135deg, #daa520, #b8860b); }
+  .year-keywords .kw.k4 { background: linear-gradient(135deg, #c9a0dc, #6b3b78); }
+  .year-keywords .kw.k5 { background: linear-gradient(135deg, #ff6b35, #8c3d52); }
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 6px;
+  }
+  .mg-cell {
+    aspect-ratio: 1 / 1.1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    position: relative;
+    cursor: default;
+  }
+  .mg-cell .mg-num {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .mg-cell .mg-val {
+    font-size: 0.82rem;
+    opacity: 0.95;
+  }
+  .goal-card {
+    background: linear-gradient(135deg, #fff9f0 0%, #faf0fc 100%);
+    border-radius: 12px;
+    padding: 24px 28px;
+    border: 2px dashed #c9a0dc;
+  }
+  .goal-card input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #e0d0ec;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 1rem;
+    color: #2c2c2c;
+    font-family: inherit;
+    margin-bottom: 10px;
+  }
+  .goal-card input:focus { outline: none; border-color: #5d4e6d; box-shadow: 0 0 0 3px rgba(93,78,109,0.08); }
+
+  /* 周/月目标编辑器 */
+  .goals-editor {
+    margin-top: 14px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #fbf8ff 0%, #fff8f0 100%);
+    border-radius: 14px;
+    border: 1.5px solid #efe4f8;
+    display: none; /* 切到 year 时隐藏 */
+  }
+  .goals-editor.show { display: block; }
+  .goals-editor .ge-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .goals-editor .ge-title {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #3a1f4a;
+    letter-spacing: 1px;
+  }
+  .goals-editor .ge-title small {
+    font-weight: 500;
+    color: #7a6b8a;
+    font-size: 0.8rem;
+    margin-left: 8px;
+    letter-spacing: 0;
+  }
+  .goals-editor .ge-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-suggest {
+    background: linear-gradient(135deg,#a8d8ea,#4fa8c9);
+    color: #0a3a4e;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: var(--trans);
+  }
+  .btn-suggest:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .btn-suggest:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(0.4); }
+  .btn-save-goals {
+    background: linear-gradient(135deg,#5d4e6d,#2d1b4e);
+    color: #fff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    letter-spacing: 1px;
+  }
+  .btn-save-goals:hover { filter: brightness(1.15); }
+  .ge-inputs { display: flex; flex-direction: column; gap: 9px; }
+  .ge-inputs input {
+    padding: 10px 14px;
+    border: 1.5px solid #e0d0ec;
+    border-radius: 10px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: #2c2c2c;
+    transition: var(--trans);
+  }
+  .ge-inputs input:focus { outline: none; border-color: #5d4e6d; box-shadow: 0 0 0 3px rgba(93,78,109,0.08); }
+  .ge-inputs .g-num {
+    display: inline-block;
+    width: 26px; height: 26px; line-height: 26px;
+    text-align: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg,#5d4e6d,#2d1b4e);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .ge-inputs .gi-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .ge-inputs .gi-row input { flex: 1; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
+  .ge-inputs .gi-num-wrap {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 10px;
+    background: #faf5fd;
+    border: 1.5px solid #e0d0ec;
+    border-right: none;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+  }
+
+  /* 总结内的目标展示条 */
+  .summary-goal-bar {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 16px;
+    background: #fbf8ff;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border-left: 4px solid #c9a0dc;
+  }
+  .summary-goal-bar.empty {
+    justify-content: center;
+    color: #999;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    border-left-color: #ddd;
+    background: #fafafa;
+  }
+
+  /* 紧凑模式开关 */
+  .compact-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    font-size: 0.82rem;
+    color: #888;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .compact-toggle input { cursor: pointer; width: 16px; height: 16px; }
+  .compact-toggle:hover { color: #5d4e6d; }
+
+  /* 紧凑模式下折叠低优先模块 */
+  .compact-foldable {
+    max-height: 2000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 1;
+  }
+  .compact-foldable.folded {
+    max-height: 0;
+    opacity: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  }
+  .compact-fold-toggle {
+    display: none;
+    text-align: center;
+    padding: 10px;
+    color: #5d4e6d;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: #faf5fd;
+    border-radius: 8px;
+    border: 1px dashed #d9c8e8;
+    margin-top: 4px;
+    transition: var(--trans);
+  }
+  .compact-fold-toggle:hover { background: #f0e8f8; }
+  body.compact-mode .compact-fold-toggle { display: block; }
+  body.compact-mode .compact-foldable.folded { display: none; }
+
+  /* 目标达成标记 */
+  .goal-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.78rem;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+  .goal-check.ok { background: #2d8659; color: #fff; }
+  .goal-check.fail { background: #b22222; color: #fff; }
+  .goal-check.unknown { background: #daa520; color: #3a2a05; }
+
+  /* 4周完成率对比横条 */
+  .week-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .week-compare-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .week-compare-row .wc-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #5d4e6d;
+    min-width: 50px;
+    flex-shrink: 0;
+  }
+  .week-compare-row .wc-track {
+    flex: 1;
+    height: 24px;
+    background: #f0f0f5;
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+  }
+  .week-compare-row .wc-fill {
+    height: 100%;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.4s ease;
+  }
+
+  /* 卡片内心情时间轴 */
+  .mood-flow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .mood-flow-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 50px;
+    background: var(--c-card);
+    border: 1px solid var(--c-line);
+    color: var(--c-text);
+    font-size: 0.86rem;
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .mood-flow-item .mf-time {
+    color: var(--c-text-soft);
+    font-size: 0.76rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .mood-flow-arrow {
+    color: var(--c-accent);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+    justify-content: flex-end;
+  }
+  .btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--trans);
+    letter-spacing: 1px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #2d1b4e 0%, #5d4e6d 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(45,27,78,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(45,27,78,0.4); }
+  .btn-secondary {
+    background: #f0f0f5;
+    color: #555;
+  }
+  .btn-secondary:hover { background: #e4e4ec; }
+  .btn-danger {
+    background: #fff0f0;
+    color: #c0392b;
+  }
+  .btn-danger:hover { background: #ffe0e0; }
+  .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+
+  /* ======= 9 COLOR THEMES ======= */
+  .theme-0 { /* 冰蓝 Ice Blue */
+    --c-bg: linear-gradient(160deg, #d6ecf5 0%, #a8d8ea 100%);
+    --c-accent: #4fa8c9;
+    --c-line: #7fc0dc;
+    --c-text: #1e3a4a;
+    --c-text-soft: #3a5e72;
+    --c-card: rgba(255,255,255,0.62);
+    --c-tag: #4fa8c9;
+  }
+  .theme-1 { /* 星空紫 Starry Purple */
+    --c-bg: linear-gradient(160deg, #2d1b4e 0%, #4a3b6b 60%, #6b5878 100%);
+    --c-accent: #c9a0dc;
+    --c-line: #8870a8;
+    --c-text: #f0e8f8;
+    --c-text-soft: #cdbce0;
+    --c-card: rgba(255,255,255,0.09);
+    --c-tag: #c9a0dc;
+  }
+  .theme-2 { /* 血红 Blood Red */
+    --c-bg: linear-gradient(160deg, #4a0a0a 0%, #8b0000 50%, #b22222 100%);
+    --c-accent: #ffd0c0;
+    --c-line: #d66858;
+    --c-text: #fff0ea;
+    --c-text-soft: #ffc9b8;
+    --c-card: rgba(255,255,255,0.08);
+    --c-tag: #ffb09a;
+  }
+  .theme-3 { /* 紫橙 Purple Orange */
+    --c-bg: linear-gradient(160deg, #5c2040 0%, #8c3d52 50%, #ff6b35 100%);
+    --c-accent: #ffb88c;
+    --c-line: #d4805a;
+    --c-text: #fff3e6;
+    --c-text-soft: #ffd4b8;
+    --c-card: rgba(255,255,255,0.1);
+    --c-tag: #ffb88c;
+  }
+  .theme-4 { /* 粉紫 Pink Purple */
+    --c-bg: linear-gradient(160deg, #e8c9e8 0%, #c9a0dc 60%, #b784c4 100%);
+    --c-accent: #6b3b78;
+    --c-line: #a878bd;
+    --c-text: #3a1f4a;
+    --c-text-soft: #5c3a70;
+    --c-card: rgba(255,255,255,0.55);
+    --c-tag: #6b3b78;
+  }
+  .theme-5 { /* 黑色 Black */
+    --c-bg: linear-gradient(160deg, #0a0a0a 0%, #1a1a1a 50%, #2c2c2c 100%);
+    --c-accent: #e8c77a;
+    --c-line: #555;
+    --c-text: #f0f0f0;
+    --c-text-soft: #b8b8b8;
+    --c-card: rgba(255,255,255,0.05);
+    --c-tag: #e8c77a;
+  }
+  .theme-6 { /* 琥珀金 Amber Gold */
+    --c-bg: linear-gradient(160deg, #4a3410 0%, #8b6508 50%, #daa520 100%);
+    --c-accent: #fff4d0;
+    --c-line: #c9a55c;
+    --c-text: #fff9e6;
+    --c-text-soft: #ffe9a8;
+    --c-card: rgba(255,255,255,0.1);
+    --c-tag: #fff4d0;
+  }
+  .theme-7 { /* 铅灰色 Lead Gray */
+    --c-bg: linear-gradient(160deg, #2d3748 0%, #4a5568 50%, #718096 100%);
+    --c-accent: #d0d8e0;
+    --c-line: #8899aa;
+    --c-text: #f0f4f8;
+    --c-text-soft: #c0c8d0;
+    --c-card: rgba(255,255,255,0.08);
+    --c-tag: #d0d8e0;
+  }
+  .theme-8 { /* 烟紫色 Smoke Purple */
+    --c-bg: linear-gradient(160deg, #3e324a 0%, #5d4e6d 50%, #7a6b8a 100%);
+    --c-accent: #e8d5f0;
+    --c-line: #9888a8;
+    --c-text: #f5eef8;
+    --c-text-soft: #d4c5e0;
+    --c-card: rgba(255,255,255,0.1);
+    --c-tag: #e8d5f0;
+  }
+
+  /* ======= DAILY CARD ======= */
+  .records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .data-mgmt {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 30px 0 10px;
+    border-top: 2px dashed #e2e2e8;
+    margin-top: 30px;
+  }
+
+  .day-card {
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--c-bg);
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  .day-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+    background: var(--c-accent);
+  }
+
+  .day-header {
+    padding: 22px 30px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.5px solid var(--c-line);
+    position: relative;
+  }
+  .day-header::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 42%; height: 3px;
+    background: var(--c-accent);
+    border-radius: 0 3px 3px 0;
+  }
+  .day-date {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-text);
+    letter-spacing: 1px;
+  }
+  .day-weekday {
+    font-size: 0.9rem;
+    color: var(--c-text-soft);
+    margin-top: 2px;
+    letter-spacing: 2px;
+  }
+  .day-color-tag {
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: 1.5px solid var(--c-accent);
+    color: var(--c-tag);
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .day-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .day-body {
+    padding: 26px 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 22px;
+  }
+
+  .info-block {
+    background: var(--c-card);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-left: 3px solid var(--c-accent);
+    transition: var(--trans);
+  }
+  .info-block:hover { transform: translateX(4px); }
+  .info-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--c-text-soft);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .info-value {
+    font-size: 1.08rem;
+    color: var(--c-text);
+    font-weight: 600;
+  }
+  .info-sub {
+    font-size: 0.82rem;
+    color: var(--c-text-soft);
+    margin-top: 4px;
+  }
+
+  .section-full {
+    grid-column: 1 / -1;
+  }
+  .section-title {
+    font-size: 0.78rem;
+    letter-spacing: 3px;
+    font-weight: 700;
+    color: var(--c-text-soft);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--c-line), transparent);
+  }
+
+  .tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .task-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--c-card);
+    border-radius: var(--radius-sm);
+  }
+  .task-bullet {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    flex-shrink: 0;
+  }
+  .task-text {
+    color: var(--c-text);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .mood-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 50px;
+    background: var(--c-card);
+    border: 1.5px solid var(--c-accent);
+    color: var(--c-text);
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .events-box {
+    padding: 16px 18px;
+    background: var(--c-card);
+    border-radius: var(--radius-sm);
+    color: var(--c-text);
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+    line-height: 1.8;
+    border: 1px solid var(--c-line);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #999;
+  }
+  .empty-state .icon {
+    font-size: 3.5rem;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+  .empty-state p { font-size: 1rem; letter-spacing: 2px; }
+
+  /* ======= SUMMARY PANEL ======= */
+  .summary-controls {
+    background: #fff;
+    padding: 22px 26px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+  .summary-controls label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    letter-spacing: 1px;
+  }
+  .summary-controls select,
+  .summary-controls input {
+    padding: 9px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-family: inherit;
+    background: #fafafc;
+  }
+  .summary-controls select:focus,
+  .summary-controls input:focus {
+    outline: none;
+    border-color: #5d4e6d;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+  }
+  .stat-card {
+    background: #fff;
+    padding: 24px 22px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid #5d4e6d;
+    transition: var(--trans);
+  }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+  .stat-card:nth-child(2) { border-top-color: #4fa8c9; }
+  .stat-card:nth-child(3) { border-top-color: #daa520; }
+  .stat-card:nth-child(4) { border-top-color: #c9a0dc; }
+  .stat-card:nth-child(5) { border-top-color: #b22222; }
+  .stat-label {
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    color: #888;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: #2c2c2c;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  .stat-unit {
+    font-size: 0.9rem;
+    color: #888;
+    font-weight: 500;
+    margin-left: 4px;
+  }
+  .stat-sub {
+    font-size: 0.82rem;
+    color: #999;
+    margin-top: 6px;
+  }
+
+  .section-block {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 28px 30px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+  }
+  .section-block h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f5;
+    color: #2c2c2c;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 1px;
+  }
+  .section-block h3::before {
+    content: "";
+    width: 5px; height: 20px;
+    background: linear-gradient(180deg, #5d4e6d, #a8d8ea);
+    border-radius: 3px;
+  }
+
+  .mood-distribution {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .mood-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #f8f8fc, #f0f0f8);
+    border-radius: var(--radius-sm);
+    min-width: 180px;
+  }
+  .mood-bar .name {
+    font-weight: 600;
+    color: #444;
+    font-size: 0.92rem;
+  }
+  .mood-bar .count {
+    margin-left: auto;
+    background: #5d4e6d;
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .weight-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 180px;
+    padding: 20px 0 30px;
+    position: relative;
+  }
+  .weight-chart::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 28px;
+    height: 1px;
+    background: #eee;
+  }
+  .weight-bar {
+    flex: 1;
+    background: linear-gradient(180deg, #5d4e6d 0%, #a8d8ea 100%);
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    min-width: 30px;
+    max-width: 60px;
+    transition: var(--trans);
+  }
+  .weight-bar:hover { filter: brightness(1.15); transform: scaleY(1.02); transform-origin: bottom; }
+  .weight-bar .w-val {
+    position: absolute;
+    top: -22px; left: 50%; transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: #555;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .weight-bar .w-date {
+    position: absolute;
+    bottom: -26px; left: 50%; transform: translateX(-50%);
+    font-size: 0.68rem;
+    color: #999;
+    white-space: nowrap;
+  }
+
+  .summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .summary-row {
+    display: flex;
+    padding: 12px 16px;
+    background: #fafafc;
+    border-radius: var(--radius-sm);
+    gap: 14px;
+    align-items: flex-start;
+    transition: var(--trans);
+  }
+  .summary-row:hover { background: #f0f0f8; }
+  .summary-row .date {
+    font-weight: 700;
+    color: #5d4e6d;
+    min-width: 90px;
+    font-size: 0.9rem;
+  }
+  .summary-row .content {
+    flex: 1;
+    font-size: 0.92rem;
+    color: #444;
+    line-height: 1.7;
+  }
+  .summary-row .tag {
+    padding: 2px 10px;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .sleep-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+  }
+  .sleep-bar-row .d {
+    min-width: 80px;
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 600;
+  }
+  .sleep-bar-track {
+    flex: 1;
+    height: 22px;
+    background: #f0f0f5;
+    border-radius: 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sleep-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2d1b4e, #a8d8ea);
+    border-radius: 50px;
+    transition: width 0.6s ease;
+  }
+  .sleep-bar-row .h {
+    min-width: 60px;
+    text-align: right;
+    font-weight: 700;
+    color: #5d4e6d;
+    font-size: 0.9rem;
+  }
+
+  /* ======= TOAST ======= */
+  .toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #2c2c2c;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 1px;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* ======= SCROLLBAR ======= */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #f0f0f5; }
+  ::-webkit-scrollbar-thumb { background: #c9c9d5; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a8a8b8; }
+
+  @media (max-width: 640px) {
+    body { padding: 16px 10px 60px; }
+    .header h1 { font-size: 1.6rem; letter-spacing: 3px; }
+    .form-card { padding: 22px; }
+    .day-header { padding: 16px 20px; flex-wrap: wrap; gap: 10px; }
+    .day-body { padding: 18px 20px; }
+    .tab { padding: 8px 18px; font-size: 0.85rem; }
+    .stat-value { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>日 常 记 录</h1>
+    <div class="sub">DAILY  JOURNAL  ·  时光的痕迹</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="record">＋ 今日记录</button>
+    <button class="tab" data-tab="list">日 历</button>
+    <button class="tab" data-tab="summary">周/月总结</button>
+  </div>
+
+  <!-- RECORD PANEL -->
+  <div class="panel active" id="panel-record">
+    <div class="form-card">
+      <div class="form-title"><span class="dot"></span>填写今日记录</div>
+      <form id="recordForm">
+        <div class="grid">
+          <div class="field">
+            <label>📅 日期</label>
+            <input type="date" name="date" required>
+          </div>
+          <div class="field">
+            <label>🌙 关灯睡觉时间</label>
+            <input type="time" name="lightsOut">
+          </div>
+          <div class="field">
+            <label>💤 睡着时间</label>
+            <input type="time" name="fellAsleep">
+          </div>
+          <div class="field">
+            <label>☀️ 第二天起床时间</label>
+            <input type="time" name="wakeUp">
+          </div>
+          <div class="field">
+            <label>⚖️ 体重 (kg)</label>
+            <input type="number" name="weight" step="0.1" min="20" max="250" placeholder="例如 60.5">
+          </div>
+          <div class="field full">
+            <div class="task-header-bar">
+              <label style="margin:0;">🎯 今天要做的主要三件事</label>
+              <button type="button" class="btn-inline" id="carryBtn">📌 载入昨日未完成</button>
+            </div>
+            <div class="tasks-row">
+              <div class="task-item">
+                <div class="task-num">1</div>
+                <input type="text" name="task1" placeholder="第一件主要的事...">
+              </div>
+              <div class="task-item">
+                <div class="task-num">2</div>
+                <input type="text" name="task2" placeholder="第二件主要的事...">
+              </div>
+              <div class="task-item">
+                <div class="task-num">3</div>
+                <input type="text" name="task3" placeholder="第三件主要的事...">
+              </div>
+            </div>
+            <div class="task-tip">Tip：保存后在「日历」页点击复选框可标记完成 ✅，未完成的次日可一键带入。</div>
+          </div>
+          <div class="field full">
+            <div class="task-header-bar">
+              <label style="margin:0;">💖 心情记录（一天可多次，自动带时间戳）</label>
+            </div>
+            <div class="mood-select" id="moodSelect">
+              <div class="mood-chip" data-mood="开心">😊 开心</div>
+              <div class="mood-chip" data-mood="平静">😌 平静</div>
+              <div class="mood-chip" data-mood="充实">💪 充实</div>
+              <div class="mood-chip" data-mood="疲惫">😩 疲惫</div>
+              <div class="mood-chip" data-mood="焦虑">😰 焦虑</div>
+              <div class="mood-chip" data-mood="难过">😢 难过</div>
+              <div class="mood-chip" data-mood="愤怒">😠 愤怒</div>
+              <div class="mood-chip" data-mood="期待">🤩 期待</div>
+              <div class="mood-chip" data-mood="感恩">🙏 感恩</div>
+            </div>
+            <div class="mood-actions">
+              <label class="act-label">时刻</label>
+              <input type="time" class="mood-time-input" id="moodTimeInput">
+              <input type="text" class="mood-note-input" id="moodNoteInput" placeholder="💭 可选备注：为什么这个心情？（不填也行）">
+              <button type="button" class="mood-add-btn" id="moodAddBtn" disabled>＋ 添加</button>
+              <span style="font-size:0.78rem;color:#aaa;letter-spacing:1px;">Tip：先选心情 chip 再添加</span>
+            </div>
+            <div class="mood-timeline" id="moodTimeline">
+              <div class="mood-timeline-title">当日心情时间轴</div>
+              <div id="moodEntries" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+          </div>
+          <div class="field full">
+            <label>📝 事件记录（今天发生了什么...）</label>
+            <textarea name="events" rows="4" placeholder="记录今天的点滴，值得回味的瞬间..."></textarea>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" id="resetBtn">重置</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">💾 保存记录</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LIST PANEL -->
+  <div class="panel" id="panel-list">
+    <div id="recordsList" class="records-list"></div>
+    <div class="data-mgmt">
+      <button type="button" class="btn btn-sm" id="exportBtn" style="background:#4fa8c9;color:#fff;">📦 导出数据备份</button>
+      <button type="button" class="btn btn-sm" id="importBtn" style="background:#9cd081;color:#fff;">📥 导入恢复数据</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+      <button type="button" class="btn btn-sm" id="clearAllBtn" style="background:#e05252;color:#fff;">🗑 清空所有数据</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY PANEL -->
+  <div class="panel" id="panel-summary">
+    <div class="summary-controls">
+      <label>总结类型：</label>
+      <select id="summaryType">
+        <option value="week">周总结</option>
+        <option value="month">月总结</option>
+        <option value="year">年总结</option>
+      </select>
+      <label id="weekLabel">选择周：</label>
+      <input type="week" id="weekPicker">
+      <label id="monthLabel" style="display:none;">选择月：</label>
+      <input type="month" id="monthPicker" style="display:none;">
+      <label id="yearLabel" style="display:none;">选择年：</label>
+      <input type="number" id="yearPicker" min="2000" max="2100" step="1" style="display:none;padding:7px 12px;border:1.5px solid #e2e2e8;border-radius:8px;font-family:inherit;background:#fafafc;font-size:0.9rem;">
+      <button class="btn btn-primary btn-sm" id="genSummaryBtn">生成总结</button>
+      <label class="compact-toggle"><input type="checkbox" id="compactModeToggle"><span>紧凑模式</span></label>
+    </div>
+
+    <div class="goals-editor" id="goalsEditor">
+      <div class="ge-head">
+        <div class="ge-title" id="goalsEditorTitle">
+          🎯 本期目标
+          <small>3 条最佳：2 条可量化 + 1 条弹性</small>
+        </div>
+        <div class="ge-actions">
+          <button type="button" class="btn-suggest" id="suggestGoalsBtn">✨ 基于上周期数据推荐 3 条</button>
+          <button type="button" class="btn-save-goals" id="saveGoalsBtn">💾 保存目标</button>
+        </div>
+      </div>
+      <div class="ge-inputs">
+        <div class="gi-row">
+          <div class="gi-num-wrap"><span class="g-num">1</span></div>
+          <input type="text" id="goalInput1" placeholder="目标1：可量化，例如「本周 5 天睡够 7h」">
+        </div>
+        <div class="gi-row">
+          <div class="gi-num-wrap"><span class="g-num">2</span></div>
+          <input type="text" id="goalInput2" placeholder="目标2：可量化，例如「每天至少完成 2 件要事」">
+        </div>
+        <div class="gi-row">
+          <div class="gi-num-wrap"><span class="g-num">3</span></div>
+          <input type="text" id="goalInput3" placeholder="目标3（弹性）：不焦虑，例如「见 1 个朋友 / 喝一杯咖啡」">
+        </div>
+      </div>
+    </div>
+
+    <div id="summaryContent"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ========= DATA LAYER =========
+  const STORAGE_KEY = 'daily_journal_records';
+  const COLOR_THEMES = [
+    { name: '冰蓝', cls: 'theme-0' },
+    { name: '星空紫', cls: 'theme-1' },
+    { name: '血红', cls: 'theme-2' },
+    { name: '紫橙', cls: 'theme-3' },
+    { name: '粉紫', cls: 'theme-4' },
+    { name: '黑色', cls: 'theme-5' },
+    { name: '琥珀金', cls: 'theme-6' },
+    { name: '铅灰色', cls: 'theme-7' },
+    { name: '烟紫色', cls: 'theme-8' }
+  ];
+  const MOODS = ['开心', '平静', '充实', '疲惫', '焦虑', '难过', '愤怒', '期待', '感恩'];
+
+  function loadRecords() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      for (const d in raw) {
+        const r = raw[d];
+        // 兼容旧数据：tasks: string[] → tasks: [{text, done}]
+        if (r.tasks && r.tasks.length && typeof r.tasks[0] === 'string') {
+          r.tasks = r.tasks.map(t => ({ text: t, done: false }));
+        }
+        // 兼容旧数据：mood: string → moods: [{time, mood}]（没有时间时默认 20:00）
+        if (r.mood && !Array.isArray(r.moods)) {
+          r.moods = [{ time: '20:00', mood: r.mood }];
+        }
+        if (!Array.isArray(r.moods)) r.moods = [];
+      }
+      return raw;
+    } catch(e) { return {}; }
+  }
+  function saveRecords(records) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  // 日期 -> 主题索引 (用日期字符串 hash 到 0-8)
+  function getThemeIndex(dateStr) {
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash) % 9;
+  }
+
+  // ========= TABS =========
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      if (tab.dataset.tab === 'list') renderList();
+      if (tab.dataset.tab === 'summary') initSummaryDefaults();
+    });
+  });
+
+  // ========= MOOD SELECT (multi-entry with timestamp) =========
+  let draftSelectedMood = '';
+  let currentDraftMoods = []; // [{time, mood, note?}]
+  const moodTimeInput = document.getElementById('moodTimeInput');
+  const moodNoteInput = document.getElementById('moodNoteInput');
+  const moodAddBtn = document.getElementById('moodAddBtn');
+
+  function setMoodTimeToNow() {
+    const n = new Date();
+    moodTimeInput.value = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  }
+  setMoodTimeToNow();
+
+  document.querySelectorAll('.mood-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      draftSelectedMood = chip.dataset.mood;
+      moodAddBtn.disabled = !draftSelectedMood;
+    });
+  });
+
+  function renderMoodTimeline() {
+    const box = document.getElementById('moodEntries');
+    if (!currentDraftMoods.length) {
+      box.innerHTML = '<div style="opacity:0.55;font-size:0.88rem;color:#999;letter-spacing:1px;padding:6px 4px;">还没有心情记录，选一个心情点「添加」吧</div>';
+      return;
+    }
+    const sorted = [...currentDraftMoods].sort((a,b) => a.time.localeCompare(b.time));
+    box.innerHTML = sorted.map((m, i) => `
+      <div class="mood-entry" data-idx="${i}">
+        <span class="me-time">📍 ${m.time}</span>
+        <span class="me-mood">${moodEmoji(m.mood)} ${m.mood}</span>
+        ${m.note ? `<span class="me-note" title="${escapeAttr(m.note)}">💭 ${escapeHtml(m.note)}</span>` : ''}
+        <button type="button" class="me-del" data-del="${i}" title="删除这条">✕</button>
+      </div>
+    `).join('');
+    box.querySelectorAll('[data-del]').forEach(b => {
+      b.addEventListener('click', () => {
+        const i = parseInt(b.dataset.del, 10);
+        const sorted2 = [...currentDraftMoods].sort((a,b) => a.time.localeCompare(b.time));
+        const target = sorted2[i];
+        const idx = currentDraftMoods.findIndex(x => x.time === target.time && x.mood === target.mood && (x.note||'') === (target.note||''));
+        if (idx >= 0) currentDraftMoods.splice(idx, 1);
+        renderMoodTimeline();
+      });
+    });
+  }
+  renderMoodTimeline();
+
+  moodAddBtn.addEventListener('click', () => {
+    if (!draftSelectedMood) { toast('先选一个心情'); return; }
+    const time = moodTimeInput.value || (()=>{const n=new Date();return `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;})();
+    const note = moodNoteInput.value.trim();
+    currentDraftMoods.push(note ? { time, mood: draftSelectedMood, note } : { time, mood: draftSelectedMood });
+    renderMoodTimeline();
+    // 清空并准备下一次
+    document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
+    draftSelectedMood = '';
+    moodAddBtn.disabled = true;
+    moodNoteInput.value = '';
+    setMoodTimeToNow();
+    const added = currentDraftMoods[currentDraftMoods.length-1];
+    toast(`+1 心情记录：${moodEmoji(added.mood)} ${added.mood}${added.note ? ' · '+added.note : ''}`);
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function escapeAttr(s) {
+    return escapeHtml(s);
+  }
+
+  // ========= FORM =========
+  const form = document.getElementById('recordForm');
+  const dateInput = form.querySelector('input[name="date"]');
+  dateInput.value = new Date().toISOString().split('T')[0];
+
+  dateInput.addEventListener('change', loadExisting);
+  function loadExisting() {
+    const records = loadRecords();
+    const d = dateInput.value;
+    if (records[d]) {
+      const r = records[d];
+      form.lightsOut.value = r.lightsOut || '';
+      form.fellAsleep.value = r.fellAsleep || '';
+      form.wakeUp.value = r.wakeUp || '';
+      form.weight.value = r.weight || '';
+      const tasks = (r.tasks || []).map(t => (typeof t === 'string' ? t : t.text));
+      form.task1.value = tasks[0] || '';
+      form.task2.value = tasks[1] || '';
+      form.task3.value = tasks[2] || '';
+      form.events.value = r.events || '';
+      // 载入心情多条（兼容旧数据 + 保留note）
+      currentDraftMoods = Array.isArray(r.moods) ? r.moods.map(m => ({ time: m.time, mood: m.mood, ...(m.note ? { note: m.note } : {}) })) : [];
+      renderMoodTimeline();
+      // 清空当前 chip 选中
+      document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
+      draftSelectedMood = '';
+      moodAddBtn.disabled = true;
+    } else {
+      form.reset();
+      dateInput.value = d;
+      currentDraftMoods = [];
+      renderMoodTimeline();
+      document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
+      draftSelectedMood = '';
+      moodAddBtn.disabled = true;
+    }
+  }
+
+  // 载入昨日未完成
+  document.getElementById('carryBtn').addEventListener('click', () => {
+    const records = loadRecords();
+    const curDate = new Date(dateInput.value + 'T00:00:00');
+    const yesterday = new Date(curDate);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = toStr(yesterday);
+    const r = records[yStr];
+    if (!r || !r.tasks || !r.tasks.length) {
+      toast('昨天没有记录 😅');
+      return;
+    }
+    const undone = r.tasks.filter(t => !t.done && t.text);
+    if (!undone.length) {
+      toast('🎉 昨天都完成啦，真厉害！');
+      return;
+    }
+    const slots = ['task1', 'task2', 'task3'];
+    const curTasks = slots.map(s => form[s].value.trim()).filter(Boolean);
+    if (curTasks.length + undone.length > 3) {
+      if (!confirm(`今日已有 ${curTasks.length} 件事，昨日未完成 ${undone.length} 件。将合并去重后取前 3 项，是否继续？`)) return;
+    }
+    const merged = [...curTasks];
+    for (const u of undone) {
+      if (merged.includes(u.text)) continue;
+      if (merged.length >= 3) break;
+      merged.push(u.text);
+    }
+    form.task1.value = merged[0] || '';
+    form.task2.value = merged[1] || '';
+    form.task3.value = merged[2] || '';
+    toast(`✅ 已载入 ${undone.length} 件昨日未完成`);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    form.reset();
+    dateInput.value = new Date().toISOString().split('T')[0];
+    currentDraftMoods = [];
+    renderMoodTimeline();
+    document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('selected'));
+    draftSelectedMood = '';
+    moodAddBtn.disabled = true;
+    setMoodTimeToNow();
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const records = loadRecords();
+    const d = dateInput.value;
+    const old = records[d] || {};
+    const oldTasks = Array.isArray(old.tasks) ? old.tasks.map(t => (typeof t === 'string' ? {text: t, done: false} : t)) : [];
+    const oldDoneMap = {};
+    oldTasks.forEach(t => { if (t.text) oldDoneMap[t.text] = !!t.done; });
+
+    const rawTasks = [form.task1.value, form.task2.value, form.task3.value].filter(Boolean);
+    const tasks = rawTasks.map(t => ({ text: t, done: oldDoneMap.hasOwnProperty(t) ? oldDoneMap[t] : false }));
+
+    const finalMoods = [...currentDraftMoods].sort((a,b) => a.time.localeCompare(b.time));
+    const lastMood = finalMoods.length ? finalMoods[finalMoods.length-1].mood : '';
+
+    records[d] = {
+      date: d,
+      lightsOut: form.lightsOut.value,
+      fellAsleep: form.fellAsleep.value,
+      wakeUp: form.wakeUp.value,
+      weight: form.weight.value ? parseFloat(form.weight.value) : null,
+      tasks,
+      moods: finalMoods,
+      mood: lastMood, // 兼容旧字段
+      events: form.events.value,
+      updatedAt: Date.now()
+    };
+    saveRecords(records);
+    toast('✅ 记录已保存');
+  });
+
+  // ========= RENDER LIST =========
+  function renderList() {
+    const records = loadRecords();
+    const list = document.getElementById('recordsList');
+    const dates = Object.keys(records).sort((a,b) => b.localeCompare(a));
+
+    if (dates.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">📔</div><p>还没有记录，从今天开始吧</p></div>`;
+      return;
+    }
+
+    list.innerHTML = dates.map(d => renderDayCard(records[d])).join('');
+    attachCardActions();
+  }
+
+  function getWeekday(dateStr) {
+    const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    return days[new Date(dateStr + 'T00:00:00').getDay()];
+  }
+
+  function calcSleepHours(fellAsleep, wakeUp) {
+    if (!fellAsleep || !wakeUp) return null;
+    const [fh, fm] = fellAsleep.split(':').map(Number);
+    const [wh, wm] = wakeUp.split(':').map(Number);
+    let mins = (wh * 60 + wm) - (fh * 60 + fm);
+    if (mins <= 0) mins += 24 * 60; // 跨天
+    const hours = Math.floor(mins / 60);
+    const mm = mins % 60;
+    return { hours, mins, totalMins: mins, label: `${hours}小时${mm.toString().padStart(2,'0')}分` };
+  }
+
+  function renderDayCard(r) {
+    const themeIdx = getThemeIndex(r.date);
+    const theme = COLOR_THEMES[themeIdx];
+    const sleep = calcSleepHours(r.fellAsleep, r.wakeUp);
+    const weekday = getWeekday(r.date);
+
+    // 规范化任务格式
+    const tasks = (r.tasks || []).map(t => typeof t === 'string' ? { text: t, done: false } : t).filter(t => t.text);
+    const doneCount = tasks.filter(t => t.done).length;
+    const progressHtml = tasks.length ? `<span class="task-progress">${doneCount} / ${tasks.length}</span>` : '';
+
+    const tasksHtml = tasks.length ?
+      `<div class="tasks-list">
+        ${tasks.map((t, i) => `
+          <div class="task-row ${t.done ? 'done' : ''}" data-idx="${i}">
+            <div class="task-check ${t.done ? 'checked' : ''}" data-act="toggle"></div>
+            <div class="task-text">${escapeHtml(t.text)}</div>
+          </div>
+        `).join('')}
+      </div>` : '<div class="events-box" style="opacity:0.65;">未记录</div>';
+
+    return `
+      <div class="day-card ${theme.cls}" data-date="${r.date}">
+        <div class="day-header">
+          <div>
+            <div class="day-date">${r.date.replace(/-/g, ' / ')}</div>
+            <div class="day-weekday">${weekday}</div>
+          </div>
+          <div class="day-actions">
+            <div class="day-color-tag">${theme.name}</div>
+            <button class="btn btn-secondary btn-sm" data-act="edit">编辑</button>
+            <button class="btn btn-danger btn-sm" data-act="del">删除</button>
+          </div>
+        </div>
+        <div class="day-body">
+          <div class="info-block">
+            <div class="info-label">🌙 关灯时间</div>
+            <div class="info-value">${r.lightsOut || '—'}</div>
+          </div>
+          <div class="info-block">
+            <div class="info-label">💤 入睡时间</div>
+            <div class="info-value">${r.fellAsleep || '—'}</div>
+          </div>
+          <div class="info-block">
+            <div class="info-label">☀️ 起床时间</div>
+            <div class="info-value">${r.wakeUp || '—'}</div>
+            ${sleep ? `<div class="info-sub">睡眠 ${sleep.label}</div>` : ''}
+          </div>
+          <div class="info-block">
+            <div class="info-label">⚖️ 体重</div>
+            <div class="info-value">${r.weight != null ? r.weight + ' <span style="font-size:0.75rem;opacity:0.7;">kg</span>' : '—'}</div>
+          </div>
+
+          <div class="section-full">
+            <div class="section-title">🎯 今日三件事 ${progressHtml}</div>
+            ${tasksHtml}
+          </div>
+
+          <div class="section-full">
+            <div class="section-title">💖 心情时间线 ${r.moods && r.moods.length ? `<span class="task-progress">${r.moods.length} 次记录</span>` : ''}</div>
+            ${(function() {
+              const moods = Array.isArray(r.moods) && r.moods.length
+                ? [...r.moods].sort((a,b) => a.time.localeCompare(b.time))
+                : (r.mood ? [{ time: '全天', mood: r.mood }] : []);
+              if (!moods.length) return '<div class="events-box" style="opacity:0.65;">未记录心情</div>';
+              return '<div class="mood-flow">' + moods.map((m, i) => {
+                const node = `<span class="mood-flow-item"><span class="mf-time">${m.time}</span>${moodEmoji(m.mood)} ${m.mood}${m.note ? `<span class="mood-flow-note" title="${escapeAttr(m.note)}">💭 ${escapeHtml(m.note)}</span>` : ''}</span>`;
+                return i < moods.length - 1 ? node + '<span class="mood-flow-arrow">→</span>' : node;
+              }).join('') + '</div>';
+            })()}
+          </div>
+
+          <div class="section-full">
+            <div class="section-title">📝 事件记录</div>
+            <div class="events-box">${r.events ? escapeHtml(r.events) : '<span style="opacity:0.55;">今天没有记录...</span>'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function moodEmoji(m) {
+    const map = {'开心':'😊','平静':'😌','充实':'💪','疲惫':'😩','焦虑':'😰','难过':'😢','愤怒':'😠','期待':'🤩','感恩':'🙏'};
+    return map[m] || '💭';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function attachCardActions() {
+    document.querySelectorAll('.day-card').forEach(card => {
+      const date = card.dataset.date;
+      card.querySelector('[data-act="edit"]').addEventListener('click', () => {
+        dateInput.value = date;
+        loadExisting();
+        document.querySelector('[data-tab="record"]').click();
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      });
+      card.querySelector('[data-act="del"]').addEventListener('click', () => {
+        if (confirm(`确定删除 ${date} 的记录？`)) {
+          const records = loadRecords();
+          delete records[date];
+          saveRecords(records);
+          renderList();
+          toast('已删除');
+        }
+      });
+      // 切换任务完成
+      card.querySelectorAll('[data-act="toggle"]').forEach(chk => {
+        chk.addEventListener('click', e => {
+          e.stopPropagation();
+          const row = chk.closest('.task-row');
+          const idx = parseInt(row.dataset.idx, 10);
+          const records = loadRecords();
+          const r = records[date];
+          if (!r || !r.tasks) return;
+          const tasks = r.tasks.map(t => typeof t === 'string' ? { text: t, done: false } : t);
+          if (!tasks[idx]) return;
+          tasks[idx].done = !tasks[idx].done;
+          r.tasks = tasks;
+          r.updatedAt = Date.now();
+          saveRecords(records);
+          // 局部刷新：切换 class 和 progress
+          row.classList.toggle('done', tasks[idx].done);
+          chk.classList.toggle('checked', tasks[idx].done);
+          const doneC = tasks.filter(t => t.done).length;
+          const prog = card.querySelector('.task-progress');
+          if (prog) prog.textContent = `${doneC} / ${tasks.length}`;
+          toast(tasks[idx].done ? '🎉 完成一件！' : '已取消标记');
+        });
+      });
+    });
+  }
+
+  // ========= SUMMARY =========
+  function initSummaryDefaults() {
+    const today = new Date();
+    const y = today.getFullYear();
+    // week
+    const onejan = new Date(y, 0, 1);
+    const weekNum = Math.ceil((((today - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    document.getElementById('weekPicker').value = `${y}-W${String(weekNum).padStart(2,'0')}`;
+    // month
+    document.getElementById('monthPicker').value = `${y}-${String(today.getMonth()+1).padStart(2,'0')}`;
+    // year
+    document.getElementById('yearPicker').value = y;
+    // 根据当前类型同步控件显隐（防止用户上次切到 year 后刷新错位）
+    syncSummaryControls();
+  }
+
+  function syncSummaryControls() {
+    const t = document.getElementById('summaryType').value;
+    const showWk = t === 'week';
+    const showMo = t === 'month';
+    const showYr = t === 'year';
+    document.getElementById('weekLabel').style.display  = showWk ? '' : 'none';
+    document.getElementById('weekPicker').style.display = showWk ? '' : 'none';
+    document.getElementById('monthLabel').style.display = showMo ? '' : 'none';
+    document.getElementById('monthPicker').style.display= showMo ? '' : 'none';
+    document.getElementById('yearLabel').style.display  = showYr ? '' : 'none';
+    document.getElementById('yearPicker').style.display = showYr ? '' : 'none';
+    // 目标编辑器：year 隐藏，week/month 显示+载入
+    const ed = document.getElementById('goalsEditor');
+    const titleEl = document.getElementById('goalsEditorTitle');
+    if (t === 'year') {
+      ed.classList.remove('show');
+    } else if (t === 'week') {
+      ed.classList.add('show');
+      const wk = document.getElementById('weekPicker').value || ''; // e.g. 2026-W35
+      if (wk) {
+        const [y,w] = wk.split('-W');
+        titleEl.innerHTML = `🎯 ${y} 年 第 ${parseInt(w,10)} 周目标 <small>3 条最佳：2 条可量化 + 1 条弹性</small>`;
+      }
+      fillGoalsInputs(loadWeekGoals()[wk] || ['','','']);
+    } else if (t === 'month') {
+      ed.classList.add('show');
+      const mk = document.getElementById('monthPicker').value || ''; // e.g. 2026-08
+      if (mk) {
+        const [y,m] = mk.split('-');
+        titleEl.innerHTML = `🎯 ${y} 年 ${parseInt(m,10)} 月目标 <small>3 条最佳：习惯+任务+自我关怀 各一条</small>`;
+      }
+      fillGoalsInputs(loadMonthGoals()[mk] || ['','','']);
+    }
+  }
+  function fillGoalsInputs(arr) {
+    document.getElementById('goalInput1').value = arr[0] || '';
+    document.getElementById('goalInput2').value = arr[1] || '';
+    document.getElementById('goalInput3').value = arr[2] || '';
+  }
+  function readGoalsInputs() {
+    return [
+      document.getElementById('goalInput1').value.trim(),
+      document.getElementById('goalInput2').value.trim(),
+      document.getElementById('goalInput3').value.trim()
+    ];
+  }
+
+  document.getElementById('summaryType').addEventListener('change', syncSummaryControls);
+
+  // 紧凑模式开关
+  document.getElementById('compactModeToggle').addEventListener('change', (e) => {
+    document.body.classList.toggle('compact-mode', e.target.checked);
+    try { localStorage.setItem('daily_journal_compact_mode', e.target.checked ? '1' : ''); } catch(err) {}
+    // 切换折叠状态
+    document.querySelectorAll('.compact-foldable').forEach(el => {
+      el.classList.toggle('folded', e.target.checked);
+    });
+  });
+  // 加载紧凑模式偏好
+  try {
+    if (localStorage.getItem('daily_journal_compact_mode') === '1') {
+      document.getElementById('compactModeToggle').checked = true;
+      document.body.classList.add('compact-mode');
+    }
+  } catch(e) {}
+
+  document.getElementById('genSummaryBtn').addEventListener('click', () => {
+    const type = document.getElementById('summaryType').value;
+    if (type === 'year') {
+      const y = parseInt(document.getElementById('yearPicker').value, 10) || new Date().getFullYear();
+      generateYearSummary(y);
+    } else {
+      generateSummary();
+    }
+  });
+
+  // 目标编辑器：周/月切换也要重载对应目标
+  document.getElementById('weekPicker').addEventListener('change', syncSummaryControls);
+  document.getElementById('monthPicker').addEventListener('change', syncSummaryControls);
+
+  // 保存目标
+  document.getElementById('saveGoalsBtn').addEventListener('click', () => {
+    const t = document.getElementById('summaryType').value;
+    const goals = readGoalsInputs();
+    if (t === 'week') {
+      const wk = document.getElementById('weekPicker').value;
+      if (!wk) return;
+      const all = loadWeekGoals();
+      all[wk] = goals; saveWeekGoals(all);
+      toast('✓ 本周 3 条目标已保存');
+    } else if (t === 'month') {
+      const mk = document.getElementById('monthPicker').value;
+      if (!mk) return;
+      const all = loadMonthGoals();
+      all[mk] = goals; saveMonthGoals(all);
+      toast('✓ 本月 3 条目标已保存');
+    }
+  });
+
+  // 基于上周期数据推荐 3 条
+  document.getElementById('suggestGoalsBtn').addEventListener('click', () => {
+    const t = document.getElementById('summaryType').value;
+    const goals = suggestGoalsFor(t);
+    fillGoalsInputs(goals);
+    const btn = document.getElementById('suggestGoalsBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ 已生成 3 条建议，点「保存目标」确认';
+    setTimeout(() => btn.textContent = orig, 2200);
+  });
+
+  // ========== 推荐算法：基于「上一周期」真实数据 ==========
+  function suggestGoalsFor(type) {
+    const negMoods = ['疲惫', '焦虑', '难过', '愤怒'];
+    const posMoods = ['开心', '充实', '期待', '感恩', '平静'];
+    // 获取上一周期的范围 key + 记录
+    let recs = [];
+    let rangeLabel = '';
+    let scopeHint = type === 'week' ? '本周' : '本月';
+    let periodDays = type === 'week' ? 7 : 30;
+    const all = loadRecords();
+
+    if (type === 'week') {
+      const val = document.getElementById('weekPicker').value;
+      if (val) {
+        let [y, w] = val.split('-W').map(v=>parseInt(v,10));
+        // 上周：w=1 时到去年最后一周
+        w--;
+        if (w < 1) { y--; w = getLastWeekOfYear(y); }
+        const start = getMondayOfWeek(y, w);
+        const end = new Date(start); end.setDate(end.getDate()+6);
+        for (let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) {
+          const k = toStr(d);
+          if (all[k]) recs.push(all[k]);
+        }
+        rangeLabel = `${y} 年第 ${w} 周`;
+      }
+    } else if (type === 'month') {
+      const val = document.getElementById('monthPicker').value;
+      if (val) {
+        let [y, m] = val.split('-').map(Number);
+        m--; if (m < 0) { m = 11; y--; }
+        const start = new Date(y, m, 1);
+        const end = new Date(y, m+1, 0); // last day
+        periodDays = end.getDate();
+        for (let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) {
+          const k = toStr(d);
+          if (all[k]) recs.push(all[k]);
+        }
+        rangeLabel = `${y} 年 ${m+1} 月`;
+      }
+    }
+
+    // === 基础指标（和 generateSummary 同源逻辑）===
+    const havePrev = recs.length > 0;
+    const totalSleepMin = recs.reduce((s, r) => {
+      const c = calcSleepHours(r.fellAsleep, r.wakeUp);
+      return c ? s + c.totalMins : s;
+    }, 0);
+    const avgSleepMin = recs.length ? Math.round(totalSleepMin / recs.length) : 0;
+    const sleepWithData = recs.filter(r => calcSleepHours(r.fellAsleep, r.wakeUp)).length;
+    const sleepDays6Plus = recs.filter(r => {
+      const c = calcSleepHours(r.fellAsleep, r.wakeUp);
+      return c && c.totalMins >= 360;
+    }).length;
+
+    // 任务
+    let totalTasks = 0, doneTasks = 0;
+    let fullDays = 0;
+    const undoneTexts = [];
+    recs.forEach(r => {
+      const ts = (r.tasks||[]).map(t => typeof t==='string'?{text:t,done:false}:t).filter(t=>t.text);
+      if (ts.length && ts.every(t=>t.done)) fullDays++;
+      ts.forEach(t => {
+        totalTasks++;
+        if (t.done) doneTasks++;
+        else undoneTexts.push(t.text);
+      });
+    });
+    const taskRate = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
+    const avgTaskPerDay = recs.length ? Math.round(doneTasks / recs.length) : 0;
+
+    // 心情
+    const moodEntries = [];
+    recs.forEach(r => {
+      const moods = Array.isArray(r.moods) && r.moods.length ? r.moods : (r.mood ? [{time:'20:00', mood:r.mood}] : []);
+      moods.forEach(m => moodEntries.push(m));
+    });
+    const negCount = moodEntries.filter(e => negMoods.includes(e.mood)).length;
+    const posCount = moodEntries.filter(e => posMoods.includes(e.mood)).length;
+    const negPct = moodEntries.length ? Math.round(negCount/moodEntries.length*100) : 0;
+
+    // 体重
+    const weightRecs = recs.filter(r => r.weight != null);
+    const wDelta = (weightRecs.length >= 2) ? (weightRecs[weightRecs.length-1].weight - weightRecs[0].weight) : null;
+
+    // === 候选池（每条带 rank：分数高先选） ===
+    const pool = [];
+    // 睡眠相关
+    if (havePrev) {
+      if (avgSleepMin < 390 || (sleepWithData > 0 && sleepDays6Plus < sleepWithData * 0.5)) {
+        const target = Math.max(5, Math.min(7, (type==='week'? 5 : Math.round(periodDays*0.7))));
+        const h = 7;
+        pool.push({ s: 100, text: `${scopeHint} ${target} 天睡够 ${h} 小时（上周期平均 ${avgSleepMin?Math.floor(avgSleepMin/60)+'h'+(avgSleepMin%60)+'m':'数据不足'}，先保底线）` });
+      } else {
+        pool.push({ s: 20, text: `${scopeHint} 维持睡眠节奏：每天 0 点前关灯（上周期睡得不错，保持住）` });
+      }
+    } else {
+      pool.push({ s: 95, text: `${scopeHint} ${type==='week'?5:20} 天完成记录（先攒第一波数据）` });
+    }
+
+    // 任务相关
+    if (havePrev) {
+      if (taskRate < 55) {
+        const target = type === 'week' ? '每天至少完成 2 件' : '完成率冲 70%';
+        pool.push({ s: 95 - Math.min(30, taskRate), text: `${scopeHint} ${target}（上周期完成率仅 ${taskRate}% · 建议第 3 件事换成 5 分钟能做完的小事）` });
+      } else if (fullDays === 0 && totalTasks >= 3) {
+        pool.push({ s: 85, text: `${scopeHint} 先出现 ${type==='week'?1:3} 个「三件事全做完」的全勤日（拉满正反馈）` });
+      } else if (taskRate >= 90) {
+        pool.push({ s: 25, text: `${scopeHint} 保持节奏 + 挑战一件上周期未完成的长期大事（${undoneTexts[0] ? '：'+undoneTexts[0].slice(0,20) : ''}）` });
+      } else {
+        pool.push({ s: 55, text: `${scopeHint} 任务完成率保 ${Math.max(70, taskRate)}%（上周期 ${taskRate}%，小幅加压）` });
+      }
+    } else {
+      pool.push({ s: 90, text: `${scopeHint} 每天写满 3 件要事 · 完成率冲 60%（开始阶段先建立习惯）` });
+    }
+
+    // 心情相关
+    if (havePrev && moodEntries.length) {
+      if (negPct >= 50) {
+        pool.push({ s: 90, text: `${scopeHint} 每天加 1 条「感恩/小确幸」心情记录（上周期负面心情占 ${negPct}%，拉正心态基线）` });
+      } else if (posCount * 1.2 >= negCount) {
+        pool.push({ s: 30, text: `${scopeHint} 心情波动大的那天，多写 1 条备注记录原因（看清情绪触发点）` });
+      } else {
+        pool.push({ s: 40, text: `${scopeHint} 每天至少记录 1 次心情（养成情绪觉察的习惯）` });
+      }
+    } else {
+      pool.push({ s: 80, text: `${scopeHint} 每天至少 2 次心情打卡（上午 + 晚上），积累情绪样本` });
+    }
+
+    // 体重相关
+    if (wDelta != null) {
+      if (parseFloat(wDelta) >= 1.5) {
+        pool.push({ s: 80, text: `${scopeHint} 把「15 分钟散步 / 拉伸」固定到要做的 3 件事里（上周期体重 +${wDelta.toFixed(1)}kg）` });
+      } else if (parseFloat(wDelta) <= -1.5) {
+        pool.push({ s: 35, text: `${scopeHint} 体重保持在 [${weightRecs[0].weight - 1}, ${weightRecs[weightRecs.length-1].weight + 1}] kg 区间（巩固已有成果）` });
+      }
+    } else if (weightRecs.length >= 1) {
+      pool.push({ s: 50, text: `${scopeHint} 每天坚持称体重（只有数据连续时才看得出身体规律）` });
+    }
+
+    // 通用弹性备选 5 条（自我关怀类）
+    const fallbacks = [
+      { s: 15, text: `${scopeHint} 约 1 位朋友见面 / 视频聊天 30 分钟（保持社交链接）` },
+      { s: 15, text: `${scopeHint} 选 1 天完全放空半天，不安排硬性要事（充电比硬冲更重要）` },
+      { s: 15, text: `${scopeHint} 至少尝试 1 次新的餐厅 / 新的路线 / 新菜谱（保持生活新鲜感）` },
+      { s: 15, text: `${scopeHint} 有 1 天晚上不碰工作消息 · 睡前只读纸质书（信息断食）` },
+      { s: 15, text: `${scopeHint} 至少 1 次 30 分钟以上户外散步（走够 4000 步）` },
+    ];
+    fallbacks.forEach(f => pool.push(f));
+
+    // 没历史数据时，给一套合理起点
+    if (!havePrev) {
+      pool.push({ s: 99, text: `${scopeHint} 完成全部 ${periodDays} 天的记录打卡（先建立习惯比什么都重要）` });
+    }
+
+    // === 精选 3 条：
+    // 1. 高分刚性（睡眠/记录/任务优先）
+    // 2. 次高分刚性（任务或心情）
+    // 3. 一定要从「弹性自我关怀」里挑 1 条，保证不压抑
+    const sorted = [...pool].sort((a,b) => b.s - a.s);
+    const rigid = sorted.filter(p => !fallbacks.includes(p));
+    const soft  = sorted.filter(p => fallbacks.includes(p));
+
+    const result = [];
+    // 刚性1
+    result.push(rigid.shift() ? rigid.shift() : (()=>{
+      const p = sorted.shift(); soft.push(p); return p;
+    })() || sorted.shift());
+    // 修正：上面写复杂了，简单点重新推
+    result.length = 0;
+    if (sorted[0]) result.push(sorted[0]);
+    // 刚性2（从刚性池剔除第1之后再选1）
+    const second = sorted.slice(1).find(p => !fallbacks.includes(p)) || sorted[1] || fallbacks[0];
+    if (second && !result.includes(second)) result.push(second);
+    // 弹性3（来自 soft fallback 池的 Top）
+    const third = soft[0] || fallbacks[0];
+    if (!result.includes(third)) result.push(third);
+    else result.push(soft[1] || fallbacks[1]);
+
+    // 兜底：不足 3 条补齐
+    if (result.length < 3) {
+      for (const p of [...rigid, ...fallbacks]) {
+        if (result.includes(p)) continue;
+        result.push(p);
+        if (result.length >= 3) break;
+      }
+    }
+    // 再兜底：还是空给通用 3 条
+    if (!result[0]) result[0] = `${scopeHint} 至少 ${type==='week'?5:20} 天完成记录（先攒第一波数据）`;
+    if (!result[1]) result[1] = `${scopeHint} 每天至少完成 2 件要事 · 冲 60% 完成率`;
+    if (!result[2]) result[2] = `${scopeHint} 至少 1 次 30 分钟以上户外散步（走够 4000 步）`;
+
+    return [
+      typeof result[0] === 'string' ? result[0] : result[0].text,
+      typeof result[1] === 'string' ? result[1] : result[1].text,
+      typeof result[2] === 'string' ? result[2] : result[2].text
+    ];
+  }
+  // 计算某一年的总周数（52 or 53）
+  function getLastWeekOfYear(year) {
+    // ISO week rule：12月28日所在周就是最后一周
+    const dec28 = new Date(year, 11, 28);
+    const jan1 = new Date(year, 0, 1);
+    const onejan = new Date(jan1.getFullYear(), 0, 1);
+    const weekNum = Math.ceil((((dec28 - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    return Math.min(53, weekNum || 52);
+  }
+
+  function getDateRange() {
+    const type = document.getElementById('summaryType').value;
+    if (type === 'week') {
+      const [y, w] = document.getElementById('weekPicker').value.split('-W').map(v => parseInt(v, 10));
+      const start = getMondayOfWeek(y, w);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      return { start, end, type, label: `${y}年 第${w}周` };
+    } else {
+      const [y, m] = document.getElementById('monthPicker').value.split('-').map(Number);
+      const start = new Date(y, m-1, 1);
+      const end = new Date(y, m, 0);
+      return { start, end, type, label: `${y}年${m}月` };
+    }
+  }
+  function getMondayOfWeek(y, w) {
+    const simple = new Date(y, 0, 1 + (w-1)*7);
+    const dow = simple.getDay();
+    const ISOweekStart = simple;
+    if (dow <= 4) ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+    else ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+    return ISOweekStart;
+  }
+  function toStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function generateSummary() {
+    const range = getDateRange();
+    const all = loadRecords();
+    const dates = [];
+    for (let d = new Date(range.start); d <= range.end; d.setDate(d.getDate()+1)) {
+      dates.push(toStr(d));
+    }
+    const inRange = dates.map(d => ({ date: d, rec: all[d] || null }));
+    const recs = inRange.filter(x => x.rec).map(x => x.rec);
+
+    const html = [];
+
+    // Range banner
+    html.push(`<div class="section-block" style="background:linear-gradient(135deg,#2d1b4e,#5d4e6d);color:#fff;">
+      <h3 style="color:#fff;border-color:rgba(255,255,255,0.15);">📊 ${range.label} · 总结概览</h3>
+      <div style="opacity:0.9;font-size:0.95rem;line-height:1.9;">
+        期间：${toStr(range.start)} → ${toStr(range.end)} &nbsp;·&nbsp; 共 ${dates.length} 天 &nbsp;·&nbsp; 已记录 ${recs.length} 天
+        ${recs.length < dates.length ? `&nbsp;<span style="color:#ffb88c;">(缺 ${dates.length - recs.length} 天)</span>` : '<span style="color:#a8d8ea;">(全勤!)</span>'}
+      </div>
+    </div>`);
+
+    // ============ 🎯 本期 3 条目标 ============
+    (function() {
+      let goals = ['','',''];
+      if (range.type === 'week') {
+        goals = loadWeekGoals()[document.getElementById('weekPicker').value] || goals;
+      } else if (range.type === 'month') {
+        goals = loadMonthGoals()[document.getElementById('monthPicker').value] || goals;
+      }
+      const goalsExist = goals.some(g => (g||'').trim().length);
+      // 目标达成情况自动评估
+      const goalChecks = goals.filter(g=>g&&g.trim()).map(g => {
+        const text = g.trim();
+        // 提取数字：天数、次数、小时等
+        const dayMatch = text.match(/(\d+)\s*[天日]/);
+        const hourMatch = text.match(/(\d+)\s*[小时h小时]/i);
+        const pctMatch = text.match(/(\d+)\s*%/);
+        const timeMatch = text.match(/(\d+)\s*次/);
+        // 判定睡眠类目标
+        if (text.includes('睡') && hourMatch) {
+          const target = parseInt(hourMatch[1]);
+          const goodDays = recs.filter(r => {
+            const c = calcSleepHours(r.fellAsleep, r.wakeUp);
+            return c && c.hours >= target;
+          }).length;
+          return { ok: goodDays >= (dayMatch?parseInt(dayMatch[1]):recs.length), text: `${goodDays}/${dayMatch?dayMatch[1]:'全部'}天达标` };
+        }
+        // 判定完成率类目标
+        if (text.includes('完成率') || text.includes('完成') && pctMatch) {
+          const target = parseInt(pctMatch[1]);
+          return { ok: taskRate >= target, text: `实际${taskRate}%` };
+        }
+        // 判定天数类目标
+        if (dayMatch && (text.includes('记录') || text.includes('记') || text.includes('天'))) {
+          const target = parseInt(dayMatch[1]);
+          return { ok: recs.length >= target, text: `实际${recs.length}天` };
+        }
+        // 判定次数类目标
+        if (timeMatch && (text.includes('心情') || text.includes('打卡'))) {
+          const target = parseInt(timeMatch[1]);
+          return { ok: totalMoodCount >= target, text: `实际${totalMoodCount}次` };
+        }
+        // 无法自动量化的弹性目标
+        return { ok: null, text: '' };
+      });
+      html.push(`<div class="section-block"><h3>🎯 ${range.type==='week'?'本周':'本月'} 3 条目标</h3>
+        ${goalsExist
+          ? `<div>
+              ${goals.filter(g=>g&&g.trim()).map((g,i)=>{
+                const ck = goalChecks[i] || {ok:null,text:''};
+                const badge = ck.ok === true
+                  ? `<span class="goal-check ok" title="${ck.text}">✓</span>`
+                  : ck.ok === false
+                    ? `<span class="goal-check fail" title="${ck.text}">✗</span>`
+                    : ck.text
+                      ? `<span class="goal-check unknown" title="${ck.text}">?</span>`
+                      : '';
+                return `
+                <div class="summary-goal-bar">
+                  <span style="width:28px;height:28px;line-height:28px;text-align:center;border-radius:50%;background:linear-gradient(135deg,#5d4e6d,#2d1b4e);color:#fff;font-size:0.82rem;font-weight:800;flex-shrink:0;">${i+1}</span>
+                  <div style="flex:1;line-height:1.7;color:#2c2c2c;font-size:0.97rem;font-weight:500;padding-top:3px;">${escapeHtml(g)}${ck.text?` <small style="color:#888;font-weight:400;">（${ck.text}）</small>`:''}</div>
+                  ${badge}
+                </div>`;
+              }).join('')}
+            </div>`
+          : `<div class="summary-goal-bar empty">
+              还没设本期目标 · 点上方 <b style="margin:0 4px;color:#4fa8c9;">✨ 基于上周期数据推荐 3 条</b> 一键生成，或自己写 3 条（推荐：2 条可量化 + 1 条弹性）
+            </div>`
+        }
+      </div>`);
+    })();
+
+    // Stats
+    const totalSleep = recs.reduce((s, r) => {
+      const c = calcSleepHours(r.fellAsleep, r.wakeUp);
+      return c ? s + c.totalMins : s;
+    }, 0);
+    const avgSleepMin = recs.length ? Math.round(totalSleep / recs.length) : 0;
+    const avgSleepH = Math.floor(avgSleepMin/60);
+    const avgSleepM = avgSleepMin % 60;
+    const weightRecs = recs.filter(r => r.weight != null);
+    const avgWeight = weightRecs.length ? (weightRecs.reduce((s,r) => s+r.weight,0)/weightRecs.length).toFixed(1) : '—';
+    const weightStart = weightRecs.length ? weightRecs[0].weight : null;
+    const weightEnd = weightRecs.length ? weightRecs[weightRecs.length-1].weight : null;
+    const weightDelta = (weightStart != null && weightEnd != null) ? (weightEnd - weightStart).toFixed(1) : null;
+
+    // 心情按次统计 + 展开条目带上上下文
+    const allMoodEntries = []; // {date, time, mood, sleepMin, taskDone, taskTotal}
+    recs.forEach(r => {
+      const s = calcSleepHours(r.fellAsleep, r.wakeUp);
+      const sleepMin = s ? s.totalMins : null;
+      const ts = (r.tasks||[]).map(t => typeof t === 'string' ? { text: t, done: false } : t).filter(t => t.text);
+      const taskDone = ts.filter(t => t.done).length;
+      const taskTotal = ts.length;
+      let moods = Array.isArray(r.moods) && r.moods.length ? r.moods : (r.mood ? [{ time: '20:00', mood: r.mood }] : []);
+      moods.forEach(m => allMoodEntries.push({
+        date: r.date, time: m.time, mood: m.mood, sleepMin, taskDone, taskTotal
+      }));
+    });
+    const moodCounts = {};
+    allMoodEntries.forEach(e => { moodCounts[e.mood] = (moodCounts[e.mood]||0)+1; });
+    const topMood = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0];
+    const totalMoodCount = allMoodEntries.length;
+
+    // 任务统计（统一规范化）
+    let totalTasks = 0, doneTasks = 0;
+    const allTasks = []; // {date, text, done, no}
+    recs.forEach(r => {
+      (r.tasks||[]).forEach((t, i) => {
+        const obj = typeof t === 'string' ? { text: t, done: false } : t;
+        if (!obj.text) return;
+        totalTasks++;
+        if (obj.done) doneTasks++;
+        allTasks.push({ date: r.date, text: obj.text, done: !!obj.done, no: i+1 });
+      });
+    });
+    const taskRate = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
+
+    html.push(`<div class="summary-stats">
+      <div class="stat-card">
+        <div class="stat-label">记录天数</div>
+        <div class="stat-value">${recs.length}<span class="stat-unit">/ ${dates.length}</span></div>
+        <div class="stat-sub">完成度 ${dates.length ? Math.round(recs.length/dates.length*100) : 0}%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">平均睡眠</div>
+        <div class="stat-value">${avgSleepH}<span class="stat-unit">h ${avgSleepM.toString().padStart(2,'0')}m</span></div>
+        <div class="stat-sub">${recs.length ? `共 ${(totalSleep/60).toFixed(1)} 小时` : '暂无数据'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">心情波动性</div>
+        <div class="stat-value">${(totalMoodCount/(recs.length||1)).toFixed(1)}<span class="stat-unit">次/天</span></div>
+        <div class="stat-sub">${(() => {
+          const dm = {};
+          allMoodEntries.forEach(e => { (dm[e.date] = dm[e.date] || []).push(e.mood); });
+          const fluxDays = Object.values(dm).filter(arr => arr.length >= 3).length;
+          return fluxDays + ' 天波动≥3次' + (fluxDays >= recs.length*0.4 ? ' · 情绪起伏较大' : '');
+        })()}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">主导心情</div>
+        <div class="stat-value" style="font-size:1.4rem;">${topMood ? moodEmoji(topMood[0])+' '+topMood[0] : '—'}</div>
+        <div class="stat-sub">${topMood ? `出现 ${topMood[1]} 次 / 共 ${totalMoodCount} 次` : '暂无心情记录'}</div>
+      </div>
+      <div class="stat-card" style="border-top-color: #ff6b35;">
+        <div class="stat-label">任务完成率</div>
+        <div class="stat-value">${taskRate}<span class="stat-unit">%</span></div>
+        <div class="stat-sub">${doneTasks} / ${totalTasks} 件 · ${totalTasks-doneTasks} 件待完成</div>
+      </div>
+      <div class="stat-card" style="border-top-color: #4a5568;">
+        <div class="stat-label">全勤日</div>
+        <div class="stat-value">${recs.filter(r=>{
+           const ts=(r.tasks||[]).map(t=>typeof t==='string'?{text:t,done:false}:t).filter(t=>t.text);
+           return ts.length>0 && ts.every(t=>t.done);
+        }).length}<span class="stat-unit">天</span></div>
+        <div class="stat-sub">三件事全部完成的天数</div>
+      </div>
+    </div>`);
+
+    // Mood distribution
+    html.push(`<div class="section-block"><h3>💖 心情分布（按记录次数）</h3>
+      <div class="mood-distribution">
+        ${MOODS.map(m => {
+          const c = moodCounts[m] || 0;
+          const active = c > 0;
+          return `<div class="mood-bar" style="${active ? '' : 'opacity:0.4;'}">
+            <div style="font-size:1.3rem;">${moodEmoji(m)}</div>
+            <div class="name">${m}</div>
+            <div class="count">${c}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`);
+
+    // Mood timeline (day-by-day flow)
+    const dailyMoods = {};
+    allMoodEntries.forEach(e => {
+      (dailyMoods[e.date] = dailyMoods[e.date] || []).push(e);
+    });
+    const moodColor = {
+      '开心':'#f7c948','平静':'#a8d8ea','充实':'#9cd081','疲惫':'#9c88b2',
+      '焦虑':'#ff8a65','难过':'#7aa0d8','愤怒':'#e05252','期待':'#f59bc6','感恩':'#d6b678'
+    };
+    html.push(`<div class="section-block"><h3>📈 心情波动时间线</h3>
+      <div class="summary-list">
+        ${Object.keys(dailyMoods).sort().length ? Object.keys(dailyMoods).sort().map(d => {
+          const list = dailyMoods[d].sort((a,b) => a.time.localeCompare(b.time));
+          const flowItems = list.map((m, i) => {
+            const color = moodColor[m.mood] || '#c9a0dc';
+            const node = `<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:50px;background:#fff;border:1.5px solid ${color};color:#333;font-weight:600;font-size:0.84rem;">
+              <span style="font-size:0.72rem;color:#888;letter-spacing:1px;">${m.time}</span>${moodEmoji(m.mood)}<span>${m.mood}</span>
+            </span>`;
+            return i < list.length - 1 ? node + '<span style="color:#aaa;font-weight:700;margin:0 2px;">→</span>' : node;
+          }).join('');
+          const wave = list.length >= 2
+            ? `<span style="margin-left:auto;font-size:0.78rem;color:${list.length>=3 ? '#b22222' : '#888'};letter-spacing:1px;padding:3px 10px;border-radius:50px;background:${list.length>=3 ? '#fff0ee' : '#f5f5fa'};">波动${list.length-1}次</span>`
+            : '';
+          return `<div class="summary-row">
+            <div class="date">${d.slice(5)}</div>
+            <div class="content" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${flowItems}</div>
+            ${wave}
+          </div>`;
+        }).join('') : '<div class="empty-state" style="padding:30px;"><p>暂无心情数据</p></div>'}
+      </div>
+    </div>`);
+
+    // Sleep × Mood correlation
+    (function() {
+      const withCtx = allMoodEntries.filter(e => e.sleepMin != null);
+      if (withCtx.length < 3) return; // 样本太少不显示
+      const lowSleep = withCtx.filter(e => e.sleepMin < 360); // < 6h
+      const normalSleep = withCtx.filter(e => e.sleepMin >= 360);
+      const negMoods = ['疲惫', '焦虑', '难过', '愤怒'];
+      const negRate = arr => arr.length ? Math.round(arr.filter(e => negMoods.includes(e.mood)).length / arr.length * 100) : 0;
+      const posMoods = ['开心', '充实', '期待', '感恩', '平静'];
+      const posRate = arr => arr.length ? Math.round(arr.filter(e => posMoods.includes(e.mood)).length / arr.length * 100) : 0;
+      html.push(`<div class="section-block"><h3>🔗 睡眠 × 心情 对照</h3>
+        <div class="summary-stats" style="margin-bottom:0;">
+          <div class="stat-card" style="border-top-color: #e05252;">
+            <div class="stat-label">睡眠不足6h 负面心情</div>
+            <div class="stat-value">${negRate(lowSleep)}<span class="stat-unit">%</span></div>
+            <div class="stat-sub">样本 ${lowSleep.length} 次 · 负面(${negMoods.join('/')})</div>
+          </div>
+          <div class="stat-card" style="border-top-color: #9cd081;">
+            <div class="stat-label">睡眠≥6h 正面心情</div>
+            <div class="stat-value">${posRate(normalSleep)}<span class="stat-unit">%</span></div>
+            <div class="stat-sub">样本 ${normalSleep.length} 次 · 正面(${posMoods.filter((_,i)=>i<3).join('/')}...)</div>
+          </div>
+          <div class="stat-card" style="border-top-color: #5d4e6d;">
+            <div class="stat-label">结论</div>
+            <div class="stat-value" style="font-size:1.15rem;">${
+              negRate(lowSleep) > negRate(normalSleep) + 10
+                ? '睡得短 → 易负面 😪'
+                : (posRate(normalSleep) >= posRate(lowSleep) + 10 ? '睡得好 → 更正面 💫' : '暂未观察到明显差异 · 继续记录')
+            }</div>
+            <div class="stat-sub">数据随记录积累会越来越准</div>
+          </div>
+        </div>
+      </div>`);
+    })();
+
+    // Task completion × Mood correlation
+    (function() {
+      const withCtx = allMoodEntries.filter(e => e.taskTotal > 0);
+      if (withCtx.length < 3) return;
+      const splitRate = 0.66; // 完成率 >= 66% = 高完成日
+      const highDone = withCtx.filter(e => e.taskTotal && (e.taskDone / e.taskTotal) >= splitRate);
+      const lowDone  = withCtx.filter(e => e.taskTotal && (e.taskDone / e.taskTotal) < splitRate);
+      const goodMoods = ['开心', '充实', '感恩', '平静', '期待'];
+      const gmRate = arr => arr.length ? Math.round(arr.filter(e => goodMoods.includes(e.mood)).length / arr.length * 100) : 0;
+      html.push(`<div class="section-block"><h3>🔗 任务完成率 × 心情 对照</h3>
+        <div class="summary-stats" style="margin-bottom:0;">
+          <div class="stat-card" style="border-top-color: #2d8659;">
+            <div class="stat-label">高完成日(≥66%)好心情</div>
+            <div class="stat-value">${gmRate(highDone)}<span class="stat-unit">%</span></div>
+            <div class="stat-sub">样本 ${highDone.length} 次</div>
+          </div>
+          <div class="stat-card" style="border-top-color: #ff6b35;">
+            <div class="stat-label">低完成日好心情</div>
+            <div class="stat-value">${gmRate(lowDone)}<span class="stat-unit">%</span></div>
+            <div class="stat-sub">样本 ${lowDone.length} 次</div>
+          </div>
+          <div class="stat-card" style="border-top-color: #5d4e6d;">
+            <div class="stat-label">结论</div>
+            <div class="stat-value" style="font-size:1.15rem;">${
+              gmRate(highDone) > gmRate(lowDone) + 10
+                ? '做完事 → 心情好 🎉'
+                : (gmRate(lowDone) > gmRate(highDone) + 10 ? '注意：拖延时反而心情更差？' : '暂未观察到明显差异')
+            }</div>
+            <div class="stat-sub">高完成日好心情率 ${gmRate(highDone)}% vs 低完成 ${gmRate(lowDone)}%</div>
+          </div>
+        </div>
+      </div>`);
+    })();
+
+    // Weight chart
+    if (weightRecs.length >= 2) {
+      const weights = weightRecs.map(r => r.weight);
+      const min = Math.min(...weights) - 0.5;
+      const max = Math.max(...weights) + 0.5;
+      html.push(`<div class="section-block"><h3>⚖️ 体重变化</h3>
+        <div class="weight-chart">
+          ${weightRecs.map(r => {
+            const h = ((r.weight - min) / (max - min)) * 100;
+            return `<div class="weight-bar" style="height:${Math.max(h,5)}%;">
+              <div class="w-val">${r.weight}</div>
+              <div class="w-date">${r.date.slice(5)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`);
+    }
+
+    // Sleep bars
+    const sleepRecs = recs.filter(r => calcSleepHours(r.fellAsleep, r.wakeUp));
+    if (sleepRecs.length) {
+      const maxH = 12 * 60;
+      html.push(`<div class="section-block compact-foldable"><h3>🌙 每日睡眠时长</h3>
+        <div>
+          ${sleepRecs.map(r => {
+            const s = calcSleepHours(r.fellAsleep, r.wakeUp);
+            const pct = Math.min(100, s.totalMins / maxH * 100);
+            return `<div class="sleep-bar-row">
+              <div class="d">${r.date.slice(5)}</div>
+              <div class="sleep-bar-track"><div class="sleep-bar-fill" style="width:${pct}%;"></div></div>
+              <div class="h">${s.label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`);
+    }
+
+    // Events summary
+    const eventsRecs = recs.filter(r => r.events);
+    html.push(`<div class="section-block"><h3>📝 事件回顾</h3>
+      <div class="summary-list">
+        ${eventsRecs.length ? eventsRecs.map(r => `<div class="summary-row">
+          <div class="date">${r.date.slice(5)}</div>
+          <div class="content" style="white-space:pre-wrap;">${escapeHtml(r.events)}</div>
+        </div>`).join('') : '<div class="empty-state" style="padding:30px;"><p>本时段没有事件记录</p></div>'}
+      </div>
+    </div>`);
+
+    // Tasks summary (用上面预计算的 allTasks)
+    html.push(`<div class="section-block"><h3>🎯 要事清单</h3>
+      <div class="summary-list">
+        ${allTasks.length ? allTasks.map(t => `<div class="summary-row">
+          <div class="date">${t.date.slice(5)} · #${t.no}</div>
+          <div class="content" style="${t.done ? 'text-decoration: line-through; opacity: 0.55;' : ''}">${escapeHtml(t.text)}</div>
+          <div class="tag" style="background:${t.done ? '#2d8659' : '#b22222'};color:#fff;">${t.done ? '✓ 已完成' : '○ 待办'}</div>
+        </div>`).join('') : '<div class="empty-state" style="padding:30px;"><p>暂无要事记录</p></div>'}
+      </div>
+    </div>`);
+
+    // Undone tasks list
+    const undone = allTasks.filter(t => !t.done);
+    html.push(`<div class="section-block" style="${undone.length ? '' : 'opacity:0.75;'}"><h3>📋 未完成清单${undone.length ? '  <span style="color:#b22222;font-size:0.9rem;">× ' + undone.length + '</span>' : ''}</h3>
+      <div class="summary-list">
+        ${undone.length ? undone.map(t => `<div class="summary-row" style="border-left: 3px solid #b22222; background: #fff8f6;">
+          <div class="date">${t.date.slice(5)} · #${t.no}</div>
+          <div class="content">${escapeHtml(t.text)}</div>
+          <div class="tag" style="background:#b22222;color:#fff;">NO.${t.no}</div>
+        </div>`).join('') : '<div class="empty-state" style="padding:30px;"><p>🎊 恭喜！没有未完成的任务</p></div>'}
+      </div>
+    </div>`);
+
+    // ==================== 💡 核心建议 ====================
+    (function() {
+      const advices = []; // {prio:'high'|'mid'|'low', title, body}
+      const negMoods = ['疲惫', '焦虑', '难过', '愤怒'];
+      const posMoods = ['开心', '充实', '期待', '感恩', '平静'];
+      const goodMoods = ['开心', '充实', '感恩', '平静', '期待'];
+
+      // === 记录完成度 ===
+      const missing = dates.length - recs.length;
+      if (missing / dates.length >= 0.4) {
+        advices.push({ prio:'high',
+          title:'记录习惯需坚持',
+          body:`${range.label}共缺记 ${missing} 天（${Math.round(missing/dates.length*100)}%）。建议在每天睡前最后一件事完成填写，或设置一个每日固定提醒。先坚持 7 天就会形成稳定习惯。` });
+      } else if (missing === 0) {
+        advices.push({ prio:'low', title:'全勤！保持住', body:`本时段全部 ${dates.length} 天都记录了，非常自律的习惯。保持节奏即可。` });
+      }
+
+      // === 睡眠 ===
+      const withSleepCtx = allMoodEntries.filter(e => e.sleepMin != null);
+      if (withSleepCtx.length >= 3) {
+        const lowSleep = withSleepCtx.filter(e => e.sleepMin < 360);
+        const normalSleep = withSleepCtx.filter(e => e.sleepMin >= 360);
+        const nRateLow = lowSleep.length ? Math.round(lowSleep.filter(e => negMoods.includes(e.mood)).length / lowSleep.length * 100) : 0;
+        const nRateNorm = normalSleep.length ? Math.round(normalSleep.filter(e => negMoods.includes(e.mood)).length / normalSleep.length * 100) : 0;
+        const pRateNorm = normalSleep.length ? Math.round(normalSleep.filter(e => posMoods.includes(e.mood)).length / normalSleep.length * 100) : 0;
+        const pRateLow = lowSleep.length ? Math.round(lowSleep.filter(e => posMoods.includes(e.mood)).length / lowSleep.length * 100) : 0;
+        if (avgSleepMin > 0 && avgSleepMin < 420) { // < 7h
+          advices.push({ prio:'high',
+            title:'平均睡眠不足 7h',
+            body:`本时段平均睡眠仅 ${avgSleepH}h${avgSleepM.toString().padStart(2,'0')}m。建议目标：上床时间整体提前 30 分钟（比如把「关灯」从 23:30 调到 23:00），下周再对比一次看心情是否有明显改善。` });
+        }
+        if (nRateLow > nRateNorm + 10) {
+          advices.push({ prio:'mid',
+            title:'睡眠不足时明显更容易焦虑/疲惫',
+            body:`睡眠<6h的日子，负面心情出现率为 ${nRateLow}%，而睡眠≥6h时仅 ${nRateNorm}%。数据支持：「睡好觉=心情稳定」，优先保障 6 小时底线。` });
+        } else if (pRateNorm >= pRateLow + 10) {
+          advices.push({ prio:'low',
+            title:'睡眠充足更容易有好心情',
+            body:`睡眠≥6h时出现「开心/充实/感恩」等正面心情比例为 ${pRateNorm}%，比睡不够（${pRateLow}%）高出 ${pRateNorm-pRateLow} 个百分点。` });
+        }
+      } else if (recs.length >= 2 && avgSleepMin > 0 && avgSleepMin < 420) {
+        advices.push({ prio:'mid', title:'平均睡眠不足 7h（样本积累中）', body:`当前平均 ${avgSleepH}h${avgSleepM.toString().padStart(2,'0')}m。先再多记录几天，看看睡眠时间和心情波动的关系。` });
+      }
+
+      // === 体重 ===
+      if (weightDelta != null) {
+        const want = 0; // 用户没说目标，所以只给趋势解读
+        if (parseFloat(weightDelta) >= 2) {
+          advices.push({ prio:'high',
+            title:'体重上升较快（+'+weightDelta+'kg）',
+            body:`本时段体重从期初 ${weightStart}kg 到期末 ${weightEnd}kg，增加 ${weightDelta}kg。建议在第三件事固定放一个每日微运动（比如 15 分钟散步），下周期对比一下。` });
+        } else if (parseFloat(weightDelta) <= -2) {
+          advices.push({ prio:'low',
+            title:'体重持续下降趋势（'+weightDelta+'kg）',
+            body:`期初 ${weightStart}kg → 期末 ${weightEnd}kg，减重 ${Math.abs(weightDelta)}kg。如果并非刻意减重，可留意是否和压力/吃饭不规律有关联。` });
+        }
+      }
+
+      // === 任务完成率 ===
+      if (totalTasks > 0) {
+        if (taskRate < 50) {
+          advices.push({ prio:'high',
+            title:`任务完成率仅 ${taskRate}%`,
+            body:`未完成 ${undone.length} 件。建议：① 第三件事换成"保底任务"（5 分钟能做完的小事），先保完成率建立成就感；② 连续 3 天没完成的大事件，拆成两天分别完成。` });
+        } else if (taskRate === 100) {
+          advices.push({ prio:'low', title:'100% 任务完成率', body:'全部完成！保持当前分配节奏即可，下周期可以略加挑战一点难度。' });
+        }
+      }
+      const withTaskCtx = allMoodEntries.filter(e => e.taskTotal > 0);
+      if (withTaskCtx.length >= 3) {
+        const splitRate = 0.66;
+        const highDone = withTaskCtx.filter(e => (e.taskDone/e.taskTotal) >= splitRate);
+        const lowDone  = withTaskCtx.filter(e => (e.taskDone/e.taskTotal) < splitRate);
+        const gmRate = arr => arr.length ? Math.round(arr.filter(e => goodMoods.includes(e.mood)).length / arr.length * 100) : 0;
+        if (gmRate(highDone) >= gmRate(lowDone) + 10) {
+          advices.push({ prio:'mid',
+            title:'做完事情的那几天，心情明显更好',
+            body:`高完成日（≥66%）好心情率 ${gmRate(highDone)}%，低完成日只有 ${gmRate(lowDone)}%。数据支持「小步快跑完成几件事」比「拖 3 件等明天」更好。` });
+        }
+      }
+
+      // === 心情 ===
+      if (totalMoodCount > 0) {
+        const negCount = allMoodEntries.filter(e => negMoods.includes(e.mood)).length;
+        const negPct = Math.round(negCount/totalMoodCount*100);
+        if (negPct >= 50) {
+          advices.push({ prio:'high',
+            title:`负面心情占比 ${negPct}%，需关注`,
+            body:`9 种心情里「疲惫/焦虑/难过/愤怒」占了一半以上。建议每天多加一条「感恩」记录（比如"感谢今天喝到好喝的咖啡"这种 30 秒小事），能有效把心情基线拉正。` });
+        }
+        const fullDays = recs.filter(r => {
+          const ts = (r.tasks||[]).map(t => typeof t==='string'?{text:t,done:false}:t).filter(t=>t.text);
+          return ts.length>0 && ts.every(t=>t.done);
+        }).length;
+        if (fullDays === 0 && recs.length >= 4) {
+          advices.push({ prio:'mid',
+            title:'没有出现过"三件事全完成"的日子',
+            body:'建议把"第二件事"改成一个轻量任务（比如读3页书），出现第一个全勤日之后，心态会有明显变化。' });
+        }
+      }
+
+      // === 未完成清单提示 ===
+      if (undone.length >= 5) {
+        advices.push({ prio:'mid',
+          title:`积压了 ${undone.length} 件未完成`,
+          body:`挑出 TOP2 最想做完的，本周末/下月优先解决；其余要么延期、要么直接划掉（承认做不完是心理减负的第一步）。` });
+      }
+
+      // === 输出 ===
+      if (advices.length === 0) {
+        html.push(`<div class="section-block"><h3>💡 核心建议</h3>
+          <div class="advice-empty">✓ 各指标正常，暂无明显需要改进的点 · 保持节奏即可</div>
+        </div>`);
+      } else {
+        const prioOrder = { high:0, mid:1, low:2 };
+        advices.sort((a,b) => prioOrder[a.prio] - prioOrder[b.prio]);
+        html.push(`<div class="section-block"><h3>💡 核心建议（${advices.length} 条）</h3>
+          <div>
+            ${advices.map(a => {
+              const cls = a.prio === 'high' ? 'p-high' : (a.prio === 'mid' ? 'p-mid' : 'p-low');
+              const tag = a.prio === 'high' ? '高优先级' : (a.prio === 'mid' ? '中优先级' : '低优先级');
+              return `<div class="advice-row ${cls}">
+                <span class="tag-prio">${tag}</span>
+                <div class="a-body"><span class="a-ti">${a.title}：</span>${a.body}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`);
+      }
+    })();
+
+    // 月度：4周完成率横向对比
+    if (range.type === 'month') {
+      const weeks = [[],[],[],[]];
+      dates.forEach(dstr => {
+        const day = parseInt(dstr.split('-')[2]);
+        const wi = Math.min(3, Math.floor((day-1)/7));
+        weeks[wi].push(dstr);
+      });
+      const weekData = weeks.map((wk, i) => {
+        const wkRecs = wk.map(d => all[d]).filter(r => r);
+        let tTotal = 0, tDone = 0;
+        wkRecs.forEach(r => {
+          (r.tasks||[]).forEach(t => {
+            const obj = typeof t === 'string' ? {text:t,done:false} : t;
+            if (!obj.text) return;
+            tTotal++;
+            if (obj.done) tDone++;
+          });
+        });
+        const rate = tTotal ? Math.round(tDone/tTotal*100) : 0;
+        return { label: 'W'+(i+1), rate, recCount: wkRecs.length, tTotal, tDone };
+      });
+      const colors = ['#e05252','#ff8a65','#f7c948','#9cd081'];
+      html.push(`<div class="section-block"><h3>📊 4 周完成率对比</h3>
+        <div class="week-compare">
+          ${weekData.map(w => `
+            <div class="week-compare-row">
+              <div class="wc-label">${w.label}</div>
+              <div class="wc-track"><div class="wc-fill" style="width:${w.rate}%;background:${colors[Math.min(3,Math.floor(w.rate/25))]};">${w.tTotal?w.rate+'%':'无数据'}</div></div>
+              <div style="font-size:0.78rem;color:#888;min-width:70px;">${w.tDone}/${w.tTotal}件 · ${w.recCount}天记录</div>
+            </div>`).join('')}
+        </div>
+      </div>`);
+    }
+
+    // Color themes used
+    const themeCount = {};
+    inRange.forEach(x => {
+      if (x.rec) {
+        const idx = getThemeIndex(x.date);
+        const name = COLOR_THEMES[idx].name;
+        themeCount[name] = (themeCount[name]||0)+1;
+      }
+    });
+    html.push(`<div class="section-block compact-foldable"><h3>🎨 本时段色彩</h3>
+      <div class="mood-distribution">
+        ${COLOR_THEMES.map((t, i) => {
+          const c = themeCount[t.name] || 0;
+          return `<div class="mood-bar">
+            <div style="width:20px;height:20px;border-radius:50%;background:${themePreview(i)};"></div>
+            <div class="name">${t.name}</div>
+            <div class="count">${c}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`);
+
+    // 紧凑模式展开按钮
+    html.push(`<div class="compact-fold-toggle" onclick="document.querySelectorAll('.compact-foldable.folded').forEach(function(el){el.classList.remove('folded');this.style.display='none';}.bind(this))">📋 展开折叠的内容（睡眠时长 · 色彩统计）</div>`);
+
+    document.getElementById('summaryContent').innerHTML = html.join('');
+    // 紧凑模式：渲染后对折叠元素应用 folded
+    if (document.body.classList.contains('compact-mode')) {
+      document.querySelectorAll('.compact-foldable').forEach(el => el.classList.add('folded'));
+    }
+  }
+
+  const YEAR_GOALS_KEY = 'daily_journal_year_goals_v1';
+  function loadYearGoals() {
+    try { return JSON.parse(localStorage.getItem(YEAR_GOALS_KEY)||'{}'); }
+    catch(e) { return {}; }
+  }
+  function saveYearGoals(obj) {
+    try { localStorage.setItem(YEAR_GOALS_KEY, JSON.stringify(obj)); } catch(e){}
+  }
+
+  const WEEK_GOALS_KEY = 'daily_journal_week_goals_v1';
+  function loadWeekGoals() {
+    try { return JSON.parse(localStorage.getItem(WEEK_GOALS_KEY)||'{}'); }
+    catch(e) { return {}; }
+  }
+  function saveWeekGoals(obj) {
+    try { localStorage.setItem(WEEK_GOALS_KEY, JSON.stringify(obj)); } catch(e){}
+  }
+
+  const MONTH_GOALS_KEY = 'daily_journal_month_goals_v1';
+  function loadMonthGoals() {
+    try { return JSON.parse(localStorage.getItem(MONTH_GOALS_KEY)||'{}'); }
+    catch(e) { return {}; }
+  }
+  function saveMonthGoals(obj) {
+    try { localStorage.setItem(MONTH_GOALS_KEY, JSON.stringify(obj)); } catch(e){}
+  }
+
+  // ========= YEAR SUMMARY =========
+  function generateYearSummary(year) {
+    const all = loadRecords();
+    const keys = Object.keys(all).sort();
+    const inYear = keys.filter(d => d.startsWith(year+'-'));
+    const recs = inYear.map(d => all[d]);
+    const html = [];
+    const yearStart = new Date(year,0,1);
+    const yearEnd = new Date(year,11,31);
+    const msPerDay = 86400000;
+    const totalDays = Math.round((yearEnd - yearStart)/msPerDay)+1; // 365 or 366
+    const negMoods = ['疲惫', '焦虑', '难过', '愤怒'];
+    const posMoods = ['开心', '充实', '期待', '感恩', '平静'];
+
+    // --- 基础统计 ---
+    const totalSleepMin = recs.reduce((s, r) => {
+      const c = calcSleepHours(r.fellAsleep, r.wakeUp);
+      return c ? s + c.totalMins : s;
+    }, 0);
+    const avgSleepMin = recs.length ? Math.round(totalSleepMin / recs.length) : 0;
+    const avgSH = Math.floor(avgSleepMin/60), avgSM = avgSleepMin%60;
+
+    const weightRecs = recs.filter(r => r.weight != null).sort((a,b)=>a.date && b.date ? a.date.localeCompare(b.date) : 0);
+    const avgWeight = weightRecs.length ? (weightRecs.reduce((s,r)=>s+r.weight,0)/weightRecs.length).toFixed(1) : '—';
+    const wFirst = weightRecs.length ? weightRecs[0].weight : null;
+    const wLast  = weightRecs.length ? weightRecs[weightRecs.length-1].weight : null;
+    const wMax   = weightRecs.length ? Math.max(...weightRecs.map(r=>r.weight)) : null;
+    const wMin   = weightRecs.length ? Math.min(...weightRecs.map(r=>r.weight)) : null;
+    const wDelta = (wFirst!=null && wLast!=null) ? (wLast - wFirst) : null;
+
+    // 心情条目 + 次数
+    const allMoodEntries = [];
+    recs.forEach(r => {
+      const s = calcSleepHours(r.fellAsleep, r.wakeUp);
+      const sleepMin = s ? s.totalMins : null;
+      const ts = (r.tasks||[]).map(t => typeof t === 'string' ? { text: t, done: false } : t).filter(t => t.text);
+      const taskDone = ts.filter(t => t.done).length;
+      const taskTotal = ts.length;
+      let moods = Array.isArray(r.moods) && r.moods.length ? r.moods : (r.mood ? [{ time: '20:00', mood: r.mood }] : []);
+      moods.forEach(m => allMoodEntries.push({ date: r.date, time: m.time, mood: m.mood, sleepMin, taskDone, taskTotal, note: m.note||'' }));
+    });
+    const moodCounts = {};
+    allMoodEntries.forEach(e => { moodCounts[e.mood] = (moodCounts[e.mood]||0)+1; });
+    const topMood = Object.entries(moodCounts).sort((a,b)=>b[1]-a[1])[0];
+
+    // 任务统计
+    let totalTasks=0, doneTasks=0;
+    recs.forEach(r => {
+      (r.tasks||[]).forEach(t => {
+        const obj = typeof t === 'string' ? { text: t, done: false } : t;
+        if (!obj.text) return;
+        totalTasks++; if (obj.done) doneTasks++;
+      });
+    });
+    const taskRate = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
+    const fullDays = recs.filter(r => {
+      const ts = (r.tasks||[]).map(t => typeof t==='string'?{text:t,done:false}:t).filter(t=>t.text);
+      return ts.length>0 && ts.every(t=>t.done);
+    }).length;
+
+    // ==================== 1. Hero 大标题 ====================
+    html.push(`<div class="year-hero">
+      <div class="big">${year}</div>
+      <div class="sub-title">ANNUAL · 回 顾 与 展 望</div>
+      <div class="meta">
+        <div><strong>${recs.length}</strong>记录天数 / ${totalDays}</div>
+        <div><strong>${(totalSleepMin/60).toFixed(0)}</strong>累计睡眠(小时)</div>
+        <div><strong>${allMoodEntries.length}</strong>心情记录次数</div>
+        <div><strong>${doneTasks}</strong>任务已完成</div>
+      </div>
+    </div>`);
+
+    if (recs.length === 0) {
+      html.push(`<div class="section-block" style="text-align:center;padding:50px 20px;color:#888;letter-spacing:2px;">
+        <div style="font-size:3rem;margin-bottom:16px;">📭</div>
+        <div>${year} 年还没有任何记录。先去「记录」tab 填 7 天再回来，这里会变成一份很有仪式感的年度报告～</div>
+      </div>`);
+      document.getElementById('summaryContent').innerHTML = html.join('');
+      return;
+    }
+
+    // ==================== 2. 8大核心指标卡 ====================
+    html.push(`<div class="section-block"><h3>📊 ${year} · 年度核心指标</h3>
+      <div class="year-stats">
+        <div class="ys"><div class="yl">Recorded Days</div><div class="yv">${recs.length}<span class="yu"> 天</span></div></div>
+        <div class="ys" style="border-top-color:#4fa8c9;"><div class="yl">Avg Sleep</div><div class="yv">${avgSH}<span class="yu">h${avgSM.toString().padStart(2,'0')}m</span></div></div>
+        <div class="ys" style="border-top-color:#2d1b4e;"><div class="yl">Avg Weight</div><div class="yv">${avgWeight}<span class="yu">kg</span></div></div>
+        <div class="ys" style="border-top-color:${wDelta==null?'#888':(wDelta>0?'#b22222':'#2d8659')};">
+          <div class="yl">Weight Year△</div>
+          <div class="yv">${wDelta==null?'—':(wDelta>0?'↗ +':'↘ ')+wDelta.toFixed(1)}<span class="yu">kg</span></div>
+        </div>
+        <div class="ys" style="border-top-color:#c9a0dc;"><div class="yl">主导心情</div><div class="yv" style="font-size:1.35rem;">${topMood ? moodEmoji(topMood[0])+' '+topMood[0] : '—'}</div></div>
+        <div class="ys" style="border-top-color:#daa520;"><div class="yl">Mood Logs</div><div class="yv">${allMoodEntries.length}<span class="yu"> 次</span></div></div>
+        <div class="ys" style="border-top-color:#ff6b35;"><div class="yl">Task Done</div><div class="yv">${taskRate}<span class="yu"> %</span></div></div>
+        <div class="ys" style="border-top-color:#4a5568;"><div class="yl">Full Attendance</div><div class="yv">${fullDays}<span class="yu"> 天</span></div></div>
+      </div>
+    </div>`);
+
+    // ==================== 3. 年度关键词 ====================
+    (function() {
+      const keywords = [];
+      if (topMood) keywords.push({ cls:'kw', text:`✨ ${topMood[0]}（${topMood[1]} 次）` });
+      // 从事件+任务里抽2字滑窗词频
+      const text = recs.map(r => (r.events||'') + ' ' + (r.tasks||[]).map(t => typeof t==='string'?t:t.text).join(' ')).join('');
+      const clean = text.replace(/[\s,\.，。、！？!?~～、。…·—\-\d"'（）()【】\[\]《》<>a-zA-Z]/g,'');
+      const freq = {};
+      for (let i=0; i+1<clean.length; i++) {
+        const w = clean.substr(i,2);
+        freq[w] = (freq[w]||0)+1;
+      }
+      // 过滤掉频率只有1的 和一些常见无意义双字词
+      const stop = {'今天':1,'我们':1,'自己':1,'还是':1,'这个':1,'那个':1,'一个':1,'已经':1,'没有':1,'有点':1,'因为':1,'所以':1,'但是':1,'可以':1,'然后':1,'真的':1,'感觉':1,'开始':1,'最后':1,'之后':1,'什么':1,'的时候':1};
+      const topWords = Object.entries(freq)
+        .filter(([w,c]) => c >= 2 && !stop[w])
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0, 4);
+      topWords.forEach(([w,c], i) => {
+        const cls = ['kw k2','kw k3','kw k4','kw k5'][i] || 'kw';
+        keywords.push({ cls, text:`${w} × ${c}` });
+      });
+      // 体重/任务/睡眠 词
+      if (wDelta != null && parseFloat(wDelta) >= 3) keywords.push({ cls:'kw k5', text: `体重+${wDelta.toFixed(1)}kg` });
+      if (wDelta != null && parseFloat(wDelta) <= -3) keywords.push({ cls:'kw k2', text: `体重${wDelta.toFixed(1)}kg` });
+      if (taskRate >= 85) keywords.push({ cls:'kw k3', text: `任务${taskRate}% · 高完成率` });
+      if (fullDays >= 10) keywords.push({ cls:'kw', text: `全勤${fullDays}天` });
+      html.push(`<div class="section-block"><h3>🌟 ${year} 年度关键词</h3>
+        <div class="year-keywords">
+          ${keywords.map(k => `<span class="${k.cls}">${k.text}</span>`).join('') || '<span style="color:#999;letter-spacing:2px;">继续多记录，关键词会越来越准～</span>'}
+        </div>
+      </div>`);
+    })();
+
+    // ==================== 4. 体重：起止 + 最高最低 ====================
+    if (weightRecs.length >= 2) {
+      html.push(`<div class="section-block"><h3>⚖️ 体重跨度（${weightRecs.length} 天有数据）</h3>
+        <div class="summary-stats" style="margin-bottom:0;">
+          <div class="stat-card"><div class="stat-label">年初（首次记录）</div><div class="stat-value">${wFirst}<span class="stat-unit">kg</span></div></div>
+          <div class="stat-card"><div class="stat-label">年末（末次记录）</div><div class="stat-value">${wLast}<span class="stat-unit">kg</span></div></div>
+          <div class="stat-card" style="border-top-color:#b22222;"><div class="stat-label">年度最高</div><div class="stat-value">${wMax}<span class="stat-unit">kg</span></div></div>
+          <div class="stat-card" style="border-top-color:#4fa8c9;"><div class="stat-label">年度最低</div><div class="stat-value">${wMin}<span class="stat-unit">kg</span></div></div>
+          <div class="stat-card" style="border-top-color:${wDelta>0?'#b22222':'#2d8659'};"><div class="stat-label">年度变化</div><div class="stat-value">${wDelta>0?'↗ +':'↘ '}${wDelta.toFixed(1)}<span class="stat-unit">kg</span></div></div>
+        </div>
+      </div>`);
+    }
+
+    // ==================== 5. 心情最好/最差月 · 睡眠最好/最差月 · 完成率最高月 ====================
+    (function() {
+      const months = {}; // '01'..'12'
+      for (let i=1; i<=12; i++) {
+        const mk = String(i).padStart(2,'0');
+        months[mk] = { moodPos:0, moodNeg:0, moodTot:0, sleepMins:0, sleepCnt:0, tasks:0, tasksDone:0, recs:0 };
+      }
+      allMoodEntries.forEach(e => {
+        const mk = e.date.slice(5,7);
+        if (!months[mk]) return;
+        months[mk].moodTot++;
+        if (posMoods.includes(e.mood)) months[mk].moodPos++;
+        if (negMoods.includes(e.mood)) months[mk].moodNeg++;
+        if (e.sleepMin != null) { months[mk].sleepMins += e.sleepMin; months[mk].sleepCnt++; }
+      });
+      recs.forEach(r => {
+        const mk = r.date.slice(5,7);
+        if (!months[mk]) return;
+        months[mk].recs++;
+        (r.tasks||[]).forEach(t => {
+          const obj = typeof t === 'string' ? { text:t, done:false } : t;
+          if (!obj.text) return;
+          months[mk].tasks++; if (obj.done) months[mk].tasksDone++;
+        });
+      });
+
+      function rate(v,t) { return t>0 ? v/t : null; }
+      const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+      // 心情最好月
+      let bestMood=[], worstMood=[], bestSleep=[], worstSleep=[], bestTask=[];
+      let bm=-1, wm=2, bs=-1, ws=9999999, bt=-1;
+      for (let i=1; i<=12; i++) {
+        const mk = String(i).padStart(2,'0');
+        const m = months[mk];
+        // 心情
+        if (m.moodTot >= 3) {
+          const r = rate(m.moodPos, m.moodTot);
+          if (r > bm) { bm = r; bestMood = [i]; } else if (r === bm) bestMood.push(i);
+          const nr = rate(m.moodNeg, m.moodTot);
+          if (nr < wm) { wm = nr; worstMood = [i]; } else if (nr === wm) worstMood.push(i);
+        } else if (m.moodTot > 0 && bm === -1) {
+          // 样本少的垫底
+          const r = rate(m.moodPos, m.moodTot);
+          if (r > bm) { bm = r; bestMood = [i]; }
+          const nr = rate(m.moodNeg, m.moodTot);
+          if (nr < wm) { wm = nr; worstMood = [i]; }
+        }
+        // 睡眠
+        if (m.sleepCnt >= 2) {
+          const a = m.sleepMins/m.sleepCnt;
+          if (a > bs) { bs = a; bestSleep = [i]; } else if (a === bs) bestSleep.push(i);
+          if (a < ws) { ws = a; worstSleep = [i]; } else if (a === ws) worstSleep.push(i);
+        }
+        // 任务
+        if (m.tasks >= 2) {
+          const r = rate(m.tasksDone, m.tasks);
+          if (r > bt) { bt = r; bestTask = [i]; } else if (r === bt) bestTask.push(i);
+        }
+      }
+
+      const fmtMonths = arr => arr.map(i => monthNames[i-1]).join(' / ');
+      const fmtPct = v => v==-1||v==2 ? '—' : Math.round(v*100)+'%';
+      const fmtHour = min => min===-1||min===9999999 ? '—' : `${Math.floor(min/60)}h${Math.round(min%60).toString().padStart(2,'0')}m`;
+
+      html.push(`<div class="section-block"><h3>🌙 ${year} 年度之「最」</h3>
+        <div class="summary-stats" style="margin-bottom:0;">
+          <div class="stat-card" style="border-top-color:#9cd081;">
+            <div class="stat-label">心情最好月</div>
+            <div class="stat-value" style="font-size:1.3rem;">${bestMood.length ? fmtMonths(bestMood) : '—'}</div>
+            <div class="stat-sub">正面心情率 ${fmtPct(bm)}</div>
+          </div>
+          <div class="stat-card" style="border-top-color:#e05252;">
+            <div class="stat-label">心情起伏最大月</div>
+            <div class="stat-value" style="font-size:1.3rem;">${worstMood.length ? fmtMonths(worstMood) : '—'}</div>
+            <div class="stat-sub">负面心情率 ${fmtPct(wm)}</div>
+          </div>
+          <div class="stat-card" style="border-top-color:#4fa8c9;">
+            <div class="stat-label">睡得最好月</div>
+            <div class="stat-value" style="font-size:1.3rem;">${bestSleep.length ? fmtMonths(bestSleep) : '—'}</div>
+            <div class="stat-sub">平均 ${fmtHour(bs)}</div>
+          </div>
+          <div class="stat-card" style="border-top-color:#6b5878;">
+            <div class="stat-label">睡得最差月</div>
+            <div class="stat-value" style="font-size:1.3rem;">${worstSleep.length ? fmtMonths(worstSleep) : '—'}</div>
+            <div class="stat-sub">平均 ${fmtHour(ws)}</div>
+          </div>
+          <div class="stat-card" style="border-top-color:#daa520;">
+            <div class="stat-label">执行力最高月</div>
+            <div class="stat-value" style="font-size:1.3rem;">${bestTask.length ? fmtMonths(bestTask) : '—'}</div>
+            <div class="stat-sub">任务完成率 ${bt<0?'—':Math.round(bt*100)+'%'}</div>
+          </div>
+        </div>
+      </div>`);
+
+      // ==================== 6. 月度完成率热图 12 格 ====================
+      html.push(`<div class="section-block"><h3>🔥 月度完成率热力图</h3>
+        <div class="month-grid">
+          ${Array.from({length:12}, (_,i)=>{
+            const mk = String(i+1).padStart(2,'0');
+            const m = months[mk];
+            const r = m.tasks ? m.tasksDone/m.tasks : (m.recs ? 0.001 : 0);
+            let bg;
+            if (!m.recs) bg = '#eef0f5';
+            else if (r === 0.001) bg = '#cfd3dc'; // 有记录但没写任务
+            else if (r < 0.34) bg = '#e05252';
+            else if (r < 0.66) bg = '#ff8a65';
+            else if (r < 0.85) bg = '#daa520';
+            else if (r < 1)    bg = '#9cd081';
+            else                bg = '#2d8659';
+            const txt = r===0.001 ? '·' : (m.tasks ? Math.round(r*100)+'%' : (m.recs?'0%':'—'));
+            const color = bg==='#eef0f5' ? '#b5bac6' : '#fff';
+            return `<div class="mg-cell" style="background:${bg};color:${color};" title="${monthNames[i]} · 完成率 ${r===0.001?'无任务数据':(m.tasks?Math.round(r*100)+'%':'无记录')}（记录${m.recs}天）">
+              <div class="mg-num">${i+1}月</div><div class="mg-val">${txt}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:0.8rem;color:#666;">
+          <span>图例：</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:16px;height:16px;border-radius:4px;background:#eef0f5;border:1px solid #ddd;"></span>无记录</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:16px;height:16px;border-radius:4px;background:#e05252;"></span><34%</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:16px;height:16px;border-radius:4px;background:#ff8a65;"></span>34-66%</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:16px;height:16px;border-radius:4px;background:#daa520;"></span>66-85%</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:16px;height:16px;border-radius:4px;background:#9cd081;"></span>85-100%</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:16px;height:16px;border-radius:4px;background:#2d8659;"></span>100%</span>
+        </div>
+      </div>`);
+    })();
+
+    // ==================== 7. 3 大亮点 + 3 大改进点 ====================
+    (function() {
+      const highlights = [];
+      const improvements = [];
+      // 亮点
+      if (fullDays >= 3) highlights.push(`全勤（三件事全部完成）${fullDays} 天 · 自律感拉满 ✨`);
+      if (recs.length / totalDays >= 0.85) highlights.push(`年度记录完成度 ${Math.round(recs.length/totalDays*100)}%，已经是相当稳定的长期习惯 🌿`);
+      if (recs.length >= 300) highlights.push(`全年记录超过 300 天（${recs.length}天），数据量足够反映身体周期的真实规律 📚`);
+      if (taskRate >= 80) highlights.push(`年度任务完成率 ${taskRate}%，说做就做的执行力 💯`);
+      if (wDelta != null && parseFloat(wDelta) <= -3) highlights.push(`体重年初 ${wFirst}kg → 年末 ${wLast}kg，减重 ${Math.abs(wDelta).toFixed(1)}kg，健康成果很显著 ⚖️↘`);
+      if (allMoodEntries.length) {
+        const neg = allMoodEntries.filter(e => negMoods.includes(e.mood)).length;
+        const pos = allMoodEntries.filter(e => posMoods.includes(e.mood)).length;
+        if (pos >= neg * 1.5) highlights.push(`正面心情（${pos}次）∶负面心情（${neg}次）= ${(pos/Math.max(neg,1)).toFixed(1)}∶1，情绪整体积极向上 ☀️`);
+      }
+      if (avgSleepMin >= 450) highlights.push(`全年平均睡眠 ${avgSH}h${avgSM.toString().padStart(2,'0')}m（≥ 7.5h），睡眠基础十分扎实 🌙`);
+      if (allMoodEntries.length >= 200) highlights.push(`心情记录超过 ${allMoodEntries.length} 次，已经是真正的情绪日记习惯 🌦️`);
+      while (highlights.length < 3) highlights.push('（继续多记录，下一年的亮点会更具体）');
+
+      // 改进点
+      if (recs.length / totalDays < 0.6) improvements.push(`记录完成度 ${Math.round(recs.length/totalDays*100)}%，缺记 ${totalDays-recs.length} 天。建议新年设定「每天睡前最后一件事」的固定动作，先连 30 天。`);
+      if (avgSleepMin < 390 && avgSleepMin > 0) improvements.push(`平均睡眠仅 ${avgSH}h${avgSM.toString().padStart(2,'0')}m（< 6.5h），长期会累积疲惫。新年目标：每周至少 4 天睡够 7h。`);
+      if (taskRate < 55) improvements.push(`年度任务完成率仅 ${taskRate}%。新年建议：每天最多只保留 2 件必须完成的任务，第 3 件定为"锦上添花"的可选项。`);
+      if (allMoodEntries.length) {
+        const neg = allMoodEntries.filter(e => negMoods.includes(e.mood)).length;
+        if (neg >= allMoodEntries.length * 0.45) improvements.push(`负面心情占比 ${Math.round(neg/allMoodEntries.length*100)}%。建议新年每天强制加一条「感恩/小确幸」，用 66 天把心态基线拉正。`);
+      }
+      if (wDelta != null && parseFloat(wDelta) >= 3) improvements.push(`体重年度上升 ${wDelta.toFixed(1)}kg。建议新年把「15分钟散步」固定到第 2 或第 3 件事，先观察一个季度的变化。`);
+      if (allMoodEntries.length < recs.length) improvements.push(`心情记录次数（${allMoodEntries.length}次）低于记录天数（${recs.length}天）。新年可以试着把心情记录当成"即时情绪打卡"，一有波动就记。`);
+      if (fullDays === 0 && recs.length >= 30) improvements.push('全年没有出现过"三件事全完成"的日子。新年先把一件事换成 5 分钟级别的超小事，先出现第一个全勤日。');
+      while (improvements.length < 3) improvements.push('（今年的整体状态良好，明年保持即可·）');
+
+      html.push(`<div class="section-block">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <h3 style="border-color:#9cd081;color:#255638;">🌟 年度 3 大亮点</h3>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              ${highlights.slice(0,3).map((t,i)=>`<div class="advice-row p-low"><span class="tag-prio">NO.${i+1}</span><div class="a-body">${t}</div></div>`).join('')}
+            </div>
+          </div>
+          <div>
+            <h3 style="border-color:#ff8a65;color:#8c3d52;">🌱 年度 3 大改进点</h3>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              ${improvements.slice(0,3).map((t,i)=>`<div class="advice-row p-mid"><span class="tag-prio">NO.${i+1}</span><div class="a-body">${t}</div></div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`);
+    })();
+
+    // ==================== 8. 新年目标（可编辑） ====================
+    const goals = loadYearGoals()[year] || ['','',''];
+    html.push(`<div class="section-block">
+      <h3>🎯 ${year+1} 年度目标（写 3 条，本地自动保存）</h3>
+      <div class="goal-card">
+        <div style="font-size:0.85rem;color:#777;letter-spacing:2px;margin-bottom:12px;">目标要具体可衡量（"体重 -2kg"比"减肥"好，"读完 12 本书"比"多读书"好）。</div>
+        <input type="text" id="yearGoal1" placeholder="目标 1：例如：每月读完 1 本书（全年≥12本）" value="${escapeAttr(goals[0]||'')}">
+        <input type="text" id="yearGoal2" placeholder="目标 2：例如：全年 200 天睡够 7 小时" value="${escapeAttr(goals[1]||'')}">
+        <input type="text" id="yearGoal3" placeholder="目标 3：例如：体重控制在 [63, 66] kg 区间" value="${escapeAttr(goals[2]||'')}">
+        <button type="button" class="btn btn-primary btn-sm" id="saveYearGoalsBtn" style="margin-top:8px;">💾 保存目标</button>
+      </div>
+    </div>`);
+
+    document.getElementById('summaryContent').innerHTML = html.join('');
+
+    // 绑定按钮
+    const saveBtn = document.getElementById('saveYearGoalsBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        const allGoals = loadYearGoals();
+        allGoals[year] = [
+          document.getElementById('yearGoal1').value.trim(),
+          document.getElementById('yearGoal2').value.trim(),
+          document.getElementById('yearGoal3').value.trim(),
+        ];
+        saveYearGoals(allGoals);
+        toast('✓ 年度目标已保存');
+      });
+    }
+  }
+
+  function tagColor(n) {
+    return ['#2d1b4e','#4fa8c9','#daa520','#c9a0dc','#b22222'][n-1] || '#5d4e6d';
+  }
+  function themePreview(i) {
+    const map = ['#a8d8ea','#6b5878','#b22222','#ff6b35','#c9a0dc','#2c2c2c','#daa520','#718096','#7a6b8a'];
+    return map[i];
+  }
+
+  // ========= TOAST =========
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // ========= 数据导出/导入/清空 =========
+  function exportData() {
+    const backup = {
+      _app: 'daily-journal',
+      _version: 1,
+      _exportDate: new Date().toISOString(),
+      records: loadRecords(),
+      weekGoals: loadWeekGoals(),
+      monthGoals: loadMonthGoals(),
+      yearGoals: loadYearGoals(),
+      compactMode: (() => { try { return localStorage.getItem('daily_journal_compact_mode') === '1'; } catch(e) { return false; } })()
+    };
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+    a.href = url;
+    a.download = `journal_backup_${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('📦 备份文件已下载');
+  }
+
+  function importData(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const backup = JSON.parse(e.target.result);
+        if (!backup || backup._app !== 'daily-journal') {
+          toast('❌ 文件格式不正确');
+          return;
+        }
+        const records = backup.records || {};
+        const existing = loadRecords();
+        let added = 0, overwritten = 0;
+        // 合并：已有的保留，新数据覆盖同日期
+        for (const d in records) {
+          if (existing[d]) overwritten++;
+          else added++;
+          existing[d] = records[d];
+        }
+        saveRecords(existing);
+        // 目标数据直接覆盖
+        if (backup.weekGoals) saveWeekGoals(backup.weekGoals);
+        if (backup.monthGoals) saveMonthGoals(backup.monthGoals);
+        if (backup.yearGoals) saveYearGoals(backup.yearGoals);
+        if (backup.compactMode) {
+          try { localStorage.setItem('daily_journal_compact_mode', '1'); } catch(err) {}
+        }
+        renderList();
+        toast(`✅ 导入完成：新增 ${added} 天，覆盖 ${overwritten} 天`);
+      } catch(err) {
+        toast('❌ 文件解析失败：' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+  document.getElementById('importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) importData(file);
+    e.target.value = '';
+  });
+  document.getElementById('clearAllBtn').addEventListener('click', () => {
+    if (!confirm('⚠️ 确认清空所有数据？\n\n这将删除：\n· 全部日记记录\n· 全部周/月/年目标\n· 紧凑模式偏好\n\n建议先点「导出数据备份」再清空！')) return;
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(WEEK_GOALS_KEY);
+      localStorage.removeItem(MONTH_GOALS_KEY);
+      localStorage.removeItem(YEAR_GOALS_KEY);
+      localStorage.removeItem('daily_journal_compact_mode');
+    } catch(e) {}
+    renderList();
+    toast('🗑 所有数据已清空');
+  });
+
+  // ========= INIT =========
+  (function init() {
+    // 初始化 summary 日期
+    const today = new Date();
+    const y = today.getFullYear();
+    const onejan = new Date(y, 0, 1);
+    const weekNum = Math.ceil((((today - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    document.getElementById('weekPicker').value = `${y}-W${String(weekNum).padStart(2,'0')}`;
+    document.getElementById('monthPicker').value = `${y}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  })();
+</script>
+
+</body>
+</html>
