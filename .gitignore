@@ -1,0 +1,13 @@
+*.log
+node_modules/
+.DS_Store
+*.swp
+*.swo
+deploy.zip
+deploy/
+journal-app.zip
+.trae-html-share-packages/
+deployer.html
+deployer.html.*
+*.bak
+backup-*.json
