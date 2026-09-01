@@ -1091,6 +1091,7 @@
         <div class="sync-row">
           <input type="password" id="ghToken" placeholder="GitHub Token（ghp_开头）">
           <button class="sync-btn-sm" id="saveTokenBtn" style="background:#6c5ce7;">保存Token</button>
+          <button class="sync-btn-sm" id="clearTokenBtn" style="background:#e74c3c;" title="清除本地保存的旧 Token，避免冲突">清除已保存</button>
         </div>
         <div class="sync-row">
           <input type="text" id="gistId" placeholder="Gist ID（首次留空自动创建）" readonly>
@@ -2495,6 +2496,13 @@ document.getElementById('saveTokenBtn').addEventListener('click', () => {
   setSyncStatus('Token 已保存 ✓（建议点「上传云端」初始化 Gist）', 'ok');
   showToast('Token 已保存');
 });
+document.getElementById('clearTokenBtn').addEventListener('click', () => {
+  settings.ghToken = ''; settings.gistId = ''; saveSettings(settings);
+  document.getElementById('ghToken').value = '';
+  document.getElementById('gistId').value = '';
+  setSyncStatus('本地 Token 和 Gist ID 已清除', '');
+  showToast('已清除本地凭证，请重新粘贴 Token');
+});
 document.getElementById('syncUpBtn').addEventListener('click', syncUp);
 document.getElementById('syncDownBtn').addEventListener('click', syncDown);
 document.getElementById('autoSyncToggle').addEventListener('change', () => { settings.autoSync = document.getElementById('autoSyncToggle').checked; saveSettings(settings); });
@@ -2504,11 +2512,18 @@ function setSyncStatus(msg, type='') {
   s.className = 'sync-status ' + type;
   s.textContent = msg;
 }
+function _getToken() {
+  // 优先用输入框最新值，其次用 localStorage 里存的
+  const inputVal = document.getElementById('ghToken').value.trim();
+  return inputVal || settings.ghToken || '';
+}
 async function syncUp() {
-  const token = settings.ghToken || document.getElementById('ghToken').value.trim();
-  if (!token) { showToast('请先填入并保存 GitHub Token'); setSyncStatus('缺少 Token ✗','err'); return; }
+  const token = _getToken();
+  if (!token) { showToast('请先填入 GitHub Token'); setSyncStatus('缺少 Token ✗','err'); return; }
+  // 记录来源：输入框 vs 本地存储
+  const fromInput = document.getElementById('ghToken').value.trim() === token;
   settings.ghToken = token; saveSettings(settings);
-  setSyncStatus('正在上传云端...','');
+  setSyncStatus('正在上传云端（使用 Token 长度 ' + token.length + '）...','');
   try {
     const payload = { description: 'Novel Planner Sync', public: false, files: { [GIST_FILENAME]: { content: JSON.stringify({ data: state, settings, savedAt: new Date().toISOString() }, null, 2) } } };
     let res;
@@ -2520,15 +2535,20 @@ async function syncUp() {
     document.getElementById('gistId').value = j.id;
     setSyncStatus(`✓ 上传成功 · ${formatDateTime(new Date())}`, 'ok');
     showToast('已上传到云端');
-  } catch(e) { setSyncStatus('上传失败：' + e.message, 'err'); showToast('上传失败：' + e.message); }
+  } catch(e) {
+    const detail = `上传失败：${e.message}（Token长度 ${token.length}，来源：${fromInput ? '输入框' : '本地存储'}）`;
+    setSyncStatus(detail, 'err');
+    showToast(detail);
+  }
 }
 async function syncDown() {
-  const token = settings.ghToken || document.getElementById('ghToken').value.trim();
+  const token = _getToken();
   const gid = settings.gistId || document.getElementById('gistId').value.trim();
   if (!token) { showToast('缺少 Token'); return; }
   if (!gid) { showToast('还没有 Gist ID，先在本设备点「上传云端」'); return; }
+  const fromInput = document.getElementById('ghToken').value.trim() === token;
   settings.ghToken = token; settings.gistId = gid; saveSettings(settings);
-  setSyncStatus('正在从云端拉取...','');
+  setSyncStatus('正在从云端拉取（使用 Token 长度 ' + token.length + '）...','');
   try {
     const res = await fetch(`${GITHUB_API}/gists/${gid}`, { headers: getGhHeaders(token) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -2542,7 +2562,11 @@ async function syncDown() {
     initAll();
     setSyncStatus(`✓ 拉取成功 · ${formatDateTime(new Date())}`, 'ok');
     showToast('已从云端同步下来');
-  } catch(e) { setSyncStatus('拉取失败：' + e.message, 'err'); showToast('拉取失败：' + e.message); }
+  } catch(e) {
+    const detail = `拉取失败：${e.message}（Token长度 ${token.length}，来源：${fromInput ? '输入框' : '本地存储'}）`;
+    setSyncStatus(detail, 'err');
+    showToast(detail);
+  }
 }
 (async function autoSyncInit() {
   if (!settings.autoSync || !settings.ghToken || !settings.gistId) return;
